@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{E0D688A2-E97E-4E8D-B8AB-912BEDF8DFB6}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "KitchenSink",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}

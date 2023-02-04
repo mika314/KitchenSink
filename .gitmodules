@@ -1,0 +1,3 @@
+[submodule "Plugins/QofL"]
+	path = Plugins/QofL
+	url = https://github.com/mika314/QofL.git
