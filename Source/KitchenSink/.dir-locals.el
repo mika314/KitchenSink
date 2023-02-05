@@ -103,11 +103,10 @@
                                               "/mnt/Texas/prj/ue5/Engine/Plugins/FX/Niagara/Source/NiagaraCore/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Plugins/FX/Niagara/Source/NiagaraShader/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Plugins/FX/Niagara/Source/NiagaraVertexFactories/Public"
-                                              "/mnt/Texas/prj/ue5/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UnrealEditor/Inc/ProceduralMeshComponent//UHT/"
+                                              "/mnt/Texas/prj/ue5/Engine/Plugins/Runtime/ProceduralMeshComponent/Intermediate/Build/Linux/B4D820EA/UnrealEditor/Inc/ProceduralMeshComponent/UHT/"
                                               "/mnt/Texas/prj/ue5/Engine/Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Shaders/Shared"
                                               "/mnt/Texas/prj/ue5/Engine/Source"
-                                              "/mnt/Texas/prj/ue5/Engine/Source/"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Developer"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Developer/AnimationDataController/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Developer/AnimationWidgets/Public"
@@ -198,7 +197,6 @@
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/AugmentedReality/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/AutomationTest/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/ClothingSystemRuntimeInterface/Public"
-                                              "/mnt/Texas/prj/ue5/Engine/Source/Runtime/Core/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/Core/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/CoreOnline/Public"
                                               "/mnt/Texas/prj/ue5/Engine/Source/Runtime/CoreUObject/Public"
@@ -296,7 +294,7 @@
                                               "/mnt/Texas/prj/ue5/Engine/Source/ThirdParty/Unix/LibCxx/include/c++/v1"
                                               "/mnt/Texas/prj/ue5/Engine/Source/ThirdParty/mimalloc/include"
                                               ))
-              (flycheck-clang-includes . ("/home/mika/prj/KitchenSink/Intermediate/Build/Linux/B4D820EA/UnrealEditor/Development/KitchenSink/PCH.KitchenSink.h")
+              (flycheck-clang-includes . ("/home/mika/prj/KitchenSink/Intermediate/Build/Linux/B4D820EA/UnrealEditor/Development/KitchenSink/PCH.KitchenSink.h"))
               (flycheck-clang-language-standard . "c++17")
               (flycheck-clang-args . (
                                       "-nostdinc++"

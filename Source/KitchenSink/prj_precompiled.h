@@ -7,9 +7,7 @@
 #include <Animation/AnimSequence.h>
 #include <Animation/AnimationAsset.h>
 #include <Animation/SkeletalMeshActor.h>
-#include <Animation/WidgetAnimation.h>
 #include <Blueprint/AIBlueprintHelperLibrary.h>
-#include <Blueprint/IUserObjectListEntry.h>
 #include <Blueprint/UserWidget.h>
 #include <Components/ActorComponent.h>
 #include <Components/AudioComponent.h>

@@ -6,12 +6,7 @@
 #include "ShelterMob.generated.h"
 
 UENUM(BlueprintType)
-enum class EShelterMobState : uint8 {
-  busy,
-  patrolling,
-  attacking,
-  processing,
-};
+enum class EShelterMobState : uint8 { busy, patrolling, attacking, processing, dead };
 
 UCLASS()
 class AShelterMob final : public ACharacter
@@ -22,6 +17,8 @@ public:
 
   UFUNCTION(BlueprintCallable)
   EShelterMobState getState() const;
+
+  auto die() -> void;
 
 private:
   auto BeginPlay() -> void final;
@@ -34,6 +31,12 @@ private:
   UFUNCTION()
   void OnMontageEnded(UAnimMontage *anim, bool isInterrupted);
 
+  UFUNCTION()
+  void OnMontageBlendingOut(UAnimMontage *anim, bool isInterrupted);
+
   EShelterMobState state = EShelterMobState::patrolling;
   class UAnimMontage *AttackMontage;
+  class UAnimMontage *DeathMontage;
+
+  bool isAlive = true;
 };

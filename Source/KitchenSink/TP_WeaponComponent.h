@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/SkeletalMeshComponent.h"
+#include <CoreMinimal.h>
+#include <Components/SkeletalMeshComponent.h>
 #include "TP_WeaponComponent.generated.h"
 
 class AKitchenSinkCharacter;

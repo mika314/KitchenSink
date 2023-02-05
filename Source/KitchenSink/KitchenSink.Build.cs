@@ -10,7 +10,7 @@ public class KitchenSink : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "QofL", "AIModule" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "QofL", "AIModule", "UMG", "Slate", "SlateCore" });
 
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivatePCHHeaderFile = "prj_precompiled.h";

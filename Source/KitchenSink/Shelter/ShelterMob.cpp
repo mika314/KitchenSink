@@ -4,7 +4,8 @@
 #include <Animation/AnimMontage.h>
 
 AShelterMob::AShelterMob()
-  : AttackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage"))
+  : AttackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
+    DeathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage"))
 {
   auto mesh = GetMesh();
   mesh->SetSkeletalMesh(OBJ_FINDER(SkeletalMesh, "Quaternius/Mesh", "SK_MushroomKing"));
@@ -19,6 +20,8 @@ auto AShelterMob::BeginPlay() -> void
 {
   Super::BeginPlay();
 
+  isAlive = true;
+
   auto MoveComp =
     Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
   CHECK_RET(MoveComp);
@@ -31,6 +34,7 @@ auto AShelterMob::BeginPlay() -> void
   auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
   CHECK_RET(AnimInstance);
   AnimInstance->OnMontageEnded.AddDynamic(this, &AShelterMob::OnMontageEnded);
+  AnimInstance->OnMontageBlendingOut.AddDynamic(this, &AShelterMob::OnMontageBlendingOut);
 
   AIController->ReceiveMoveCompleted.AddDynamic(this, &AShelterMob::OnMoveToActorFinished);
 
@@ -54,6 +58,13 @@ auto AShelterMob::OnMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type
 
 auto AShelterMob::processState() -> void
 {
+
+  if (state == EShelterMobState::dead)
+  {
+    Destroy();
+    return;
+  }
+
   APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
   CHECK_RET(PlayerPawn);
   const auto DistanceToPlayer = (PlayerPawn->GetActorLocation() - GetActorLocation()).Size();
@@ -115,4 +126,23 @@ void AShelterMob::OnMontageEnded(UAnimMontage *, bool)
 {
   LOG("Montage Ended", GetWorld()->GetTimeSeconds());
   processState();
+}
+
+void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
+{
+  LOG("Montage BledningOut", GetWorld()->GetTimeSeconds());
+
+  if (state == EShelterMobState::dead)
+    Destroy();
+}
+
+auto AShelterMob::die() -> void
+{
+  if (state == EShelterMobState::dead)
+    return;
+  LOG("Death Montage", GetWorld()->GetTimeSeconds());
+  auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+  CHECK_RET(AnimInstance);
+  AnimInstance->Montage_Play(DeathMontage, 1.0f);
+  state = EShelterMobState::dead;
 }
