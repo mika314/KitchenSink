@@ -14,6 +14,8 @@ AShelterMob::AShelterMob()
   mesh->SetRelativeRotation(rot(0.f, -90.f, 0.f));
   mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
   mesh->SetAnimInstanceClass(CLASS_FINDER(UAnimInstance, "Quaternius/Bluprints", "BP_MushroomKingAnim"));
+
+  AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 auto AShelterMob::BeginPlay() -> void
@@ -25,16 +27,20 @@ auto AShelterMob::BeginPlay() -> void
   auto MoveComp =
     Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
   CHECK_RET(MoveComp);
-
   MoveComp->MaxWalkSpeed = 300.0f;
-
-  auto AIController = Cast<AAIController>(GetController());
-  CHECK_RET(AIController);
 
   auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
   CHECK_RET(AnimInstance);
   AnimInstance->OnMontageEnded.AddDynamic(this, &AShelterMob::OnMontageEnded);
   AnimInstance->OnMontageBlendingOut.AddDynamic(this, &AShelterMob::OnMontageBlendingOut);
+
+  setupAi();
+}
+
+auto AShelterMob::setupAi() -> void
+{
+  auto AIController = Cast<AAIController>(GetController());
+  CHECK_RET(AIController);
 
   AIController->ReceiveMoveCompleted.AddDynamic(this, &AShelterMob::OnMoveToActorFinished);
 
@@ -58,13 +64,6 @@ auto AShelterMob::OnMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type
 
 auto AShelterMob::processState() -> void
 {
-
-  if (state == EShelterMobState::dead)
-  {
-    Destroy();
-    return;
-  }
-
   APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
   CHECK_RET(PlayerPawn);
   const auto DistanceToPlayer = (PlayerPawn->GetActorLocation() - GetActorLocation()).Size();
@@ -145,4 +144,13 @@ auto AShelterMob::die() -> void
   CHECK_RET(AnimInstance);
   AnimInstance->Montage_Play(DeathMontage, 1.0f);
   state = EShelterMobState::dead;
+}
+
+auto AShelterMob::EndPlay(const EEndPlayReason::Type reason) -> void
+{
+  auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+  CHECK_RET(AnimInstance);
+  AnimInstance->OnMontageEnded.RemoveDynamic(this, &AShelterMob::OnMontageEnded);
+  AnimInstance->OnMontageBlendingOut.RemoveDynamic(this, &AShelterMob::OnMontageBlendingOut);
+  Super::EndPlay(reason);
 }

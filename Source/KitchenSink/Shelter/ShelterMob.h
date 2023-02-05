@@ -22,8 +22,10 @@ public:
 
 private:
   auto BeginPlay() -> void final;
+  auto EndPlay(const EEndPlayReason::Type) -> void final;
   auto Tick(float) -> void final;
   auto processState() -> void;
+  auto setupAi() -> void;
 
   UFUNCTION()
   void OnMoveToActorFinished(FAIRequestID reqId, EPathFollowingResult::Type Result);
