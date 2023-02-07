@@ -54,7 +54,7 @@ protected:
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-private:
+public:
 	/** The Character holding this weapon*/
-	AKitchenSinkCharacter* Character;
+  ACharacter *Character;
 };

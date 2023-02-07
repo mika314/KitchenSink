@@ -39,6 +39,4 @@ private:
   EShelterMobState state = EShelterMobState::patrolling;
   class UAnimMontage *AttackMontage;
   class UAnimMontage *DeathMontage;
-
-  bool isAlive = true;
 };

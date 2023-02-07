@@ -22,8 +22,6 @@ auto AShelterMob::BeginPlay() -> void
 {
   Super::BeginPlay();
 
-  isAlive = true;
-
   auto MoveComp =
     Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
   CHECK_RET(MoveComp);
@@ -64,6 +62,8 @@ auto AShelterMob::OnMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type
 
 auto AShelterMob::processState() -> void
 {
+  if (state == EShelterMobState::dead)
+    return;
   APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
   CHECK_RET(PlayerPawn);
   const auto DistanceToPlayer = (PlayerPawn->GetActorLocation() - GetActorLocation()).Size();
@@ -93,6 +93,8 @@ EShelterMobState AShelterMob::getState() const
 auto AShelterMob::Tick(float dt) -> void
 {
   Super::Tick(dt);
+  if (state == EShelterMobState::dead)
+    return;
   APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
   CHECK_RET(PlayerPawn);
   switch (state)
@@ -127,7 +129,7 @@ void AShelterMob::OnMontageEnded(UAnimMontage *, bool)
   processState();
 }
 
-void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
+void AShelterMob::OnMontageBlendingOut(UAnimMontage *, bool)
 {
   LOG("Montage BledningOut", GetWorld()->GetTimeSeconds());
 

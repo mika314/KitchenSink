@@ -5,6 +5,6 @@
 
 AShelterGameMode::AShelterGameMode()
 {
-  DefaultPawnClass = CLASS_FINDER(APawn, "FirstPerson/Blueprints", "BP_FirstPersonCharacter");
+  DefaultPawnClass = CLASS_FINDER(APawn, "1-Shelter", "BP_ShelterCharacter");
   HUDClass = AShelterHud::StaticClass();
 }
