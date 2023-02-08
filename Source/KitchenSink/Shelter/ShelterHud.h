@@ -14,8 +14,10 @@ class KITCHENSINK_API AShelterHud final : public AHUD
 public:
   AShelterHud();
 
+  auto getHudUi() -> class UShelterHudUi * { return hudUi; }
+
 private:
   auto BeginPlay() -> void final;
 
-  class UShelterHudUi *hudUi = nullptr;
+  UShelterHudUi *hudUi = nullptr;
 };

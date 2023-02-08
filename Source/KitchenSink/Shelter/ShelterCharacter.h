@@ -23,6 +23,8 @@ class AShelterCharacter final : public ACharacter
 public:
   AShelterCharacter();
   auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
+  auto getHp() const -> float;
+  auto applyDamage(float) -> void;
 
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -48,6 +50,8 @@ private:
 
   UFUNCTION(BlueprintCallable, Category = Weapon)
   bool GetHasRifle() const { return true; };
+
+  float hp;
 
   auto BeginPlay() -> void final;
   auto GetFirstPersonCameraComponent() const -> UCameraComponent * { return FirstPersonCameraComponent; }

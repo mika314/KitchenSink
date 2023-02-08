@@ -11,4 +11,6 @@ UCLASS()
 class KITCHENSINK_API UShelterHudUi : public UUserWidget
 {
   GENERATED_BODY()
+public:
+  auto setHp(float) -> void;
 };

@@ -1,7 +1,8 @@
 // (c) 2013 Mika Pi
 
 #include "ShelterCharacter.h"
-#include "../KitchenSinkProjectile.h"
+#include "ShelterHud.h"
+#include "ShelterHudUi.h"
 #include "ShelterWeaponComponent.h"
 #include <Animation/AnimInstance.h>
 #include <Camera/CameraComponent.h>
@@ -53,6 +54,16 @@ void AShelterCharacter::BeginPlay()
 
   EnhancedInputComponent->BindAction(
     shelterWeapon->FireAction, ETriggerEvent::Triggered, shelterWeapon, &UShelterWeaponComponent::Fire);
+
+  hp = 1.f;
+
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
+
+  auto hud = Cast<AShelterHud>(playerController->GetHUD());
+  CHECK_RET(hud);
+  auto hudUi = hud->getHudUi();
+  hudUi->setHp(getHp());
 }
 
 void AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
@@ -87,4 +98,22 @@ void AShelterCharacter::Look(const FInputActionValue &Value)
 
   AddControllerYawInput(LookAxisVector.X);
   AddControllerPitchInput(LookAxisVector.Y);
+}
+
+auto AShelterCharacter::getHp() const -> float
+{
+  return hp;
+}
+
+auto AShelterCharacter::applyDamage(float v) -> void
+{
+  hp -= v;
+
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
+
+  auto hud = Cast<AShelterHud>(playerController->GetHUD());
+  CHECK_RET(hud);
+  auto hudUi = hud->getHudUi();
+  hudUi->setHp(hp);
 }

@@ -1,7 +1,8 @@
 #include "ShelterMob.h"
-#include "Kismet/GameplayStatics.h"
+#include "ShelterCharacter.h"
 #include <Animation/AnimBlueprint.h>
 #include <Animation/AnimMontage.h>
+#include <Kismet/GameplayStatics.h>
 
 AShelterMob::AShelterMob()
   : AttackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
@@ -64,9 +65,10 @@ auto AShelterMob::processState() -> void
 {
   if (state == EShelterMobState::dead)
     return;
-  APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-  CHECK_RET(PlayerPawn);
-  const auto DistanceToPlayer = (PlayerPawn->GetActorLocation() - GetActorLocation()).Size();
+  auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+  CHECK_RET(character);
+
+  const auto DistanceToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
 
   if (DistanceToPlayer < 350.f)
   {
@@ -95,8 +97,6 @@ auto AShelterMob::Tick(float dt) -> void
   Super::Tick(dt);
   if (state == EShelterMobState::dead)
     return;
-  APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-  CHECK_RET(PlayerPawn);
   switch (state)
   {
   case EShelterMobState::attacking: {
@@ -105,13 +105,16 @@ auto AShelterMob::Tick(float dt) -> void
     CHECK_RET(AnimInstance);
     AnimInstance->Montage_Play(AttackMontage, 1.0f);
     state = EShelterMobState::busy;
+
     break;
   }
   case EShelterMobState::processing: {
     LOG("Processing");
     auto AIController = Cast<AAIController>(GetController());
     CHECK_RET(AIController);
-    auto ret = AIController->MoveToActor(PlayerPawn, 100.0f, true, true, true, 0, true);
+    auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+    CHECK_RET(character);
+    auto ret = AIController->MoveToActor(character, 100.0f, true, true, true, 0, true);
     switch (ret)
     {
     case EPathFollowingRequestResult::Failed: state = EShelterMobState::patrolling; break;
@@ -129,9 +132,16 @@ void AShelterMob::OnMontageEnded(UAnimMontage *, bool)
   processState();
 }
 
-void AShelterMob::OnMontageBlendingOut(UAnimMontage *, bool)
+void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
 {
   LOG("Montage BledningOut", GetWorld()->GetTimeSeconds());
+
+  if (anim == AttackMontage)
+  {
+    auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+    CHECK_RET(character);
+    character->applyDamage(0.03f);
+  }
 
   if (state == EShelterMobState::dead)
     Destroy();
