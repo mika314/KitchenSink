@@ -8,3 +8,10 @@ auto UShelterHudUi::setHp(float v) -> void
   CHECK_RET(progress);
   progress->SetPercent(v);
 }
+
+auto UShelterHudUi::setScrap(int v) -> void
+{
+  auto widget = getProp<UTextBlock>(this, TEXT("ScrapTb"));
+  CHECK_RET(widget);
+  widget->SetText(FText::Format(FTextFormat(LOC("{0}")), v));
+}

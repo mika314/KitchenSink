@@ -25,6 +25,7 @@ public:
   auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
   auto getHp() const -> float;
   auto applyDamage(float) -> void;
+  auto addScrap() -> void;
 
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -52,6 +53,7 @@ private:
   bool GetHasRifle() const { return true; };
 
   float hp;
+  int scrap;
 
   auto BeginPlay() -> void final;
   auto GetFirstPersonCameraComponent() const -> UCameraComponent * { return FirstPersonCameraComponent; }

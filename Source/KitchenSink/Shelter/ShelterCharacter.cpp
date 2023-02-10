@@ -117,3 +117,15 @@ auto AShelterCharacter::applyDamage(float v) -> void
   auto hudUi = hud->getHudUi();
   hudUi->setHp(hp);
 }
+
+auto AShelterCharacter::addScrap() -> void
+{
+  scrap += rand() % 10 + 1;
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
+
+  auto hud = Cast<AShelterHud>(playerController->GetHUD());
+  CHECK_RET(hud);
+  auto hudUi = hud->getHudUi();
+  hudUi->setScrap(scrap);
+}

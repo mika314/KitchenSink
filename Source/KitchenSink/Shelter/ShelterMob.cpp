@@ -1,12 +1,14 @@
 #include "ShelterMob.h"
 #include "ShelterCharacter.h"
+#include "ShelterScrap.h"
 #include <Animation/AnimBlueprint.h>
 #include <Animation/AnimMontage.h>
 #include <Kismet/GameplayStatics.h>
 
 AShelterMob::AShelterMob()
   : AttackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
-    DeathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage"))
+    DeathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage")),
+    mushroomMesh(CreateDefaultSubobject<UStaticMeshComponent>("mushrumMesh"))
 {
   auto mesh = GetMesh();
   mesh->SetSkeletalMesh(OBJ_FINDER(SkeletalMesh, "Quaternius/Mesh", "SK_MushroomKing"));
@@ -15,6 +17,9 @@ AShelterMob::AShelterMob()
   mesh->SetRelativeRotation(rot(0.f, -90.f, 0.f));
   mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
   mesh->SetAnimInstanceClass(CLASS_FINDER(UAnimInstance, "Quaternius/Bluprints", "BP_MushroomKingAnim"));
+
+  mushroomMesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "1-Shelter", "SM_Mushroom"));
+  mushroomMesh->AttachToComponent(mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LArm"));
 
   AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
@@ -144,7 +149,22 @@ void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
   }
 
   if (state == EShelterMobState::dead)
+  {
     Destroy();
+
+    if (rand() % 10 == 0)
+    {
+      const auto SpawnLocation = getLoc(this) + vec(0., 0., 150.f);
+      FActorSpawnParameters ActorSpawnParams;
+      ActorSpawnParams.SpawnCollisionHandlingOverride =
+        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+      auto World = GetWorld();
+      CHECK_RET(World)
+      World->SpawnActor<AShelterScrap>(
+        AShelterScrap::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+    }
+  }
 }
 
 auto AShelterMob::die() -> void

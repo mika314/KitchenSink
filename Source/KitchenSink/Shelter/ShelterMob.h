@@ -39,4 +39,5 @@ private:
   EShelterMobState state = EShelterMobState::patrolling;
   class UAnimMontage *AttackMontage;
   class UAnimMontage *DeathMontage;
+  class UStaticMeshComponent *mushroomMesh;
 };

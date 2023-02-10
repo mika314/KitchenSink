@@ -43,3 +43,13 @@ please let us know. We look forward to your support and contributions!
 
 This project is released under the MIT License. See [LICENSE](LICENSE)
 for more details.
+
+## Games
+
+### Shelter
+
+FPS tower defense game. The Earth is experiencing an alien
+invasion. You are in charge of protecting the last human shelter on
+Earth. Aliens are weak to paint, so you have a paint gun and can kill
+them with paint bullets.
+
