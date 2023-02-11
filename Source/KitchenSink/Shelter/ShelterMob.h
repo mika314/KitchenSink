@@ -6,7 +6,7 @@
 #include "ShelterMob.generated.h"
 
 UENUM(BlueprintType)
-enum class EShelterMobState : uint8 { busy, patrolling, attacking, processing, dead };
+enum class EShelterMobState : uint8 { busy, attacking, processing, dead };
 
 UCLASS()
 class AShelterMob final : public ACharacter
@@ -26,6 +26,7 @@ private:
   auto Tick(float) -> void final;
   auto processState() -> void;
   auto setupAi() -> void;
+  auto LineTraceToDetermineHit() -> void;
 
   UFUNCTION()
   void OnMoveToActorFinished(FAIRequestID reqId, EPathFollowingResult::Type Result);
@@ -36,7 +37,7 @@ private:
   UFUNCTION()
   void OnMontageBlendingOut(UAnimMontage *anim, bool isInterrupted);
 
-  EShelterMobState state = EShelterMobState::patrolling;
+  EShelterMobState state = EShelterMobState::processing;
   class UAnimMontage *AttackMontage;
   class UAnimMontage *DeathMontage;
   class UStaticMeshComponent *mushroomMesh;

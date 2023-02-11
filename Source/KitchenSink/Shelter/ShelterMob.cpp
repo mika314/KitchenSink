@@ -1,6 +1,8 @@
 #include "ShelterMob.h"
 #include "ShelterCharacter.h"
+#include "ShelterDestroyPoint.h"
 #include "ShelterScrap.h"
+#include "ShelterShelter.h"
 #include <Animation/AnimBlueprint.h>
 #include <Animation/AnimMontage.h>
 #include <Kismet/GameplayStatics.h>
@@ -19,7 +21,8 @@ AShelterMob::AShelterMob()
   mesh->SetAnimInstanceClass(CLASS_FINDER(UAnimInstance, "Quaternius/Bluprints", "BP_MushroomKingAnim"));
 
   mushroomMesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "1-Shelter", "SM_Mushroom"));
-  mushroomMesh->AttachToComponent(mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LArm"));
+  mushroomMesh->AttachToComponent(
+    mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LArm"));
 
   AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
@@ -48,21 +51,11 @@ auto AShelterMob::setupAi() -> void
 
   AIController->ReceiveMoveCompleted.AddDynamic(this, &AShelterMob::OnMoveToActorFinished);
 
-  APawn *PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-  CHECK_RET(PlayerPawn);
-
-  auto ret = AIController->MoveToActor(PlayerPawn, 300.0f, true, true, true, 0, true);
-  switch (ret)
-  {
-  case EPathFollowingRequestResult::Failed: state = EShelterMobState::patrolling; break;
-  case EPathFollowingRequestResult::AlreadyAtGoal: state = EShelterMobState::attacking; break;
-  case EPathFollowingRequestResult::RequestSuccessful: state = EShelterMobState::busy; break;
-  }
+  state = EShelterMobState::processing;
 }
 
 auto AShelterMob::OnMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type) -> void
 {
-  LOG("OnMoveToActorFinished");
   processState();
 }
 
@@ -76,20 +69,9 @@ auto AShelterMob::processState() -> void
   const auto DistanceToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
 
   if (DistanceToPlayer < 350.f)
-  {
-    LOG("attack", DistanceToPlayer);
     state = EShelterMobState::attacking;
-  }
-  else if (DistanceToPlayer < 1500.f)
-  {
-    LOG("processing", DistanceToPlayer);
-    state = EShelterMobState::processing;
-  }
   else
-  {
-    LOG("patrolling", DistanceToPlayer);
-    state = EShelterMobState::patrolling;
-  }
+    state = EShelterMobState::processing;
 }
 
 EShelterMobState AShelterMob::getState() const
@@ -114,40 +96,104 @@ auto AShelterMob::Tick(float dt) -> void
     break;
   }
   case EShelterMobState::processing: {
-    LOG("Processing");
     auto AIController = Cast<AAIController>(GetController());
     CHECK_RET(AIController);
-    auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
-    CHECK_RET(character);
-    auto ret = AIController->MoveToActor(character, 100.0f, true, true, true, 0, true);
+    auto target = [&]() -> AActor * {
+      if (rand() % 2 == 0)
+        return GetWorld()->GetFirstPlayerController()->GetPawn();
+      else
+      {
+        TArray<AActor *> ShelterDestroyPoints;
+
+        UGameplayStatics::GetAllActorsOfClass(
+          GetWorld(), AShelterDestroyPoint::StaticClass(), ShelterDestroyPoints);
+
+        AActor *ClosestShelterDestroyPoint = nullptr;
+        auto ClosestDistance = MAX_FLT;
+        for (auto ShelterDestroyPoint : ShelterDestroyPoints)
+        {
+          const auto Distance = GetDistanceTo(ShelterDestroyPoint);
+          if (Distance < ClosestDistance)
+          {
+            ClosestShelterDestroyPoint = ShelterDestroyPoint;
+            ClosestDistance = Distance;
+          }
+        }
+        return ClosestShelterDestroyPoint;
+      }
+    }();
+    CHECK_RET(target);
+    auto ret = AIController->MoveToActor(target, 100.0f, true, true, true, 0, true);
     switch (ret)
     {
-    case EPathFollowingRequestResult::Failed: state = EShelterMobState::patrolling; break;
+    case EPathFollowingRequestResult::Failed: state = EShelterMobState::processing; break;
     case EPathFollowingRequestResult::AlreadyAtGoal: state = EShelterMobState::attacking; break;
     case EPathFollowingRequestResult::RequestSuccessful: state = EShelterMobState::busy; break;
     }
-    break;
   }
+  break;
   }
 }
 
-void AShelterMob::OnMontageEnded(UAnimMontage *, bool)
+void AShelterMob::OnMontageEnded(UAnimMontage *anim, bool)
 {
-  LOG("Montage Ended", GetWorld()->GetTimeSeconds());
-  processState();
-}
-
-void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
-{
-  LOG("Montage BledningOut", GetWorld()->GetTimeSeconds());
-
+  if (state == EShelterMobState::dead)
+    return;
   if (anim == AttackMontage)
+    LineTraceToDetermineHit();
+  else
+    processState();
+}
+
+auto AShelterMob::LineTraceToDetermineHit() -> void
+{
+  FVector Start = GetActorLocation();
+  FVector End = Start + GetActorForwardVector() * 500.f;
+
+  auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+  CHECK_RET(character);
+
+  const auto DistanceToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
+  if (DistanceToPlayer < 350.f)
   {
-    auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
-    CHECK_RET(character);
+    LOG("Hit player by distance");
     character->applyDamage(0.03f);
+    state = EShelterMobState::attacking;
+    return;
   }
 
+  FHitResult HitResult;
+  bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+  if (!bHit)
+  {
+    LOG("Did not hit anything");
+    state = EShelterMobState::processing;
+    return;
+  }
+  AActor *HitActor = HitResult.GetActor();
+
+  if (HitActor->IsA<AShelterCharacter>())
+  {
+    LOG("Hit player");
+    character->applyDamage(0.03f);
+    state = EShelterMobState::attacking;
+    return;
+  }
+  if (HitActor->IsA<AShelterShelter>())
+  {
+    LOG("Hit shelter building");
+    character->applyShelterDamage(0.03f);
+    state = EShelterMobState::attacking;
+    return;
+  }
+
+  LOG("Hit something else", HitActor->GetName());
+  state = EShelterMobState::processing;
+  return;
+}
+
+void AShelterMob::OnMontageBlendingOut(UAnimMontage *, bool)
+{
   if (state == EShelterMobState::dead)
   {
     Destroy();
@@ -161,8 +207,17 @@ void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
 
       auto World = GetWorld();
       CHECK_RET(World)
-      World->SpawnActor<AShelterScrap>(
+      auto NewActor = World->SpawnActor<AShelterScrap>(
         AShelterScrap::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+      if (NewActor)
+      {
+        auto PrimitiveComponent = Cast<UPrimitiveComponent>(NewActor->GetRootComponent());
+        CHECK_RET(PrimitiveComponent);
+        PrimitiveComponent->AddImpulse(
+          FVector(FMath::RandRange(-200.f, 200.f), FMath::RandRange(-200.f, 200.f), 600.f),
+          NAME_None,
+          true);
+      }
     }
   }
 }

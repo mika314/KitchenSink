@@ -14,4 +14,5 @@ class KITCHENSINK_API UShelterHudUi : public UUserWidget
 public:
   auto setHp(float) -> void;
   auto setScrap(int) -> void;
+  auto setShelterHp(float) -> void;
 };

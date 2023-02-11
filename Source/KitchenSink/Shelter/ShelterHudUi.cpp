@@ -4,9 +4,9 @@
 
 auto UShelterHudUi::setHp(float v) -> void
 {
-  auto progress = getProp<UProgressBar>(this, TEXT("HpProgress"));
-  CHECK_RET(progress);
-  progress->SetPercent(v);
+  auto widget = getProp<UProgressBar>(this, TEXT("HpProgress"));
+  CHECK_RET(widget);
+  widget->SetPercent(v);
 }
 
 auto UShelterHudUi::setScrap(int v) -> void
@@ -14,4 +14,11 @@ auto UShelterHudUi::setScrap(int v) -> void
   auto widget = getProp<UTextBlock>(this, TEXT("ScrapTb"));
   CHECK_RET(widget);
   widget->SetText(FText::Format(FTextFormat(LOC("{0}")), v));
+}
+
+auto UShelterHudUi::setShelterHp(float v) -> void
+{
+  auto widget = getProp<UProgressBar>(this, TEXT("ShelterHpProgress"));
+  CHECK_RET(widget);
+  widget->SetPercent(v);
 }

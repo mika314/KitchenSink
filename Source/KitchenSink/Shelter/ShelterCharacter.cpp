@@ -56,6 +56,7 @@ void AShelterCharacter::BeginPlay()
     shelterWeapon->FireAction, ETriggerEvent::Triggered, shelterWeapon, &UShelterWeaponComponent::Fire);
 
   hp = 1.f;
+  shelterHp = 1.f;
 
   auto playerController = Cast<APlayerController>(GetController());
   CHECK_RET(playerController);
@@ -64,6 +65,7 @@ void AShelterCharacter::BeginPlay()
   CHECK_RET(hud);
   auto hudUi = hud->getHudUi();
   hudUi->setHp(getHp());
+  hudUi->setShelterHp(shelterHp);
 }
 
 void AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
@@ -128,4 +130,16 @@ auto AShelterCharacter::addScrap() -> void
   CHECK_RET(hud);
   auto hudUi = hud->getHudUi();
   hudUi->setScrap(scrap);
+}
+
+auto AShelterCharacter::applyShelterDamage(float v) -> void
+{
+  shelterHp -= v * 0.01f;
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
+
+  auto hud = Cast<AShelterHud>(playerController->GetHUD());
+  CHECK_RET(hud);
+  auto hudUi = hud->getHudUi();
+  hudUi->setShelterHp(shelterHp);
 }

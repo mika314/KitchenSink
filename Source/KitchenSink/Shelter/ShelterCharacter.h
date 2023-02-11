@@ -25,6 +25,7 @@ public:
   auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
   auto getHp() const -> float;
   auto applyDamage(float) -> void;
+  auto applyShelterDamage(float) -> void;
   auto addScrap() -> void;
 
 private:
@@ -53,6 +54,7 @@ private:
   bool GetHasRifle() const { return true; };
 
   float hp;
+  float shelterHp;
   int scrap;
 
   auto BeginPlay() -> void final;

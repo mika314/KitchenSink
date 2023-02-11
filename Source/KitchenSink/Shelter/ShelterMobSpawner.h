@@ -25,7 +25,7 @@ private:
   class USceneComponent *Root;
 
   UPROPERTY(EditAnywhere, Category = "Spawning")
-  float SpawnRadius = 500.0f;
+  float SpawnRadius = 7863.f;
 
   UPROPERTY(EditAnywhere, Category = "Spawning")
   TSubclassOf<class AShelterMob> MobToSpawn;
