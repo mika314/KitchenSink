@@ -24,21 +24,21 @@ private:
   auto BeginPlay() -> void final;
   auto EndPlay(const EEndPlayReason::Type) -> void final;
   auto Tick(float) -> void final;
+  auto lineTraceToDetermineHit() -> void;
   auto processState() -> void;
   auto setupAi() -> void;
-  auto LineTraceToDetermineHit() -> void;
 
   UFUNCTION()
-  void OnMoveToActorFinished(FAIRequestID reqId, EPathFollowingResult::Type Result);
+  void onMoveToActorFinished(FAIRequestID reqId, EPathFollowingResult::Type result);
 
   UFUNCTION()
-  void OnMontageEnded(UAnimMontage *anim, bool isInterrupted);
+  void onMontageEnded(UAnimMontage *anim, bool isInterrupted);
 
   UFUNCTION()
-  void OnMontageBlendingOut(UAnimMontage *anim, bool isInterrupted);
+  void onMontageBlendingOut(UAnimMontage *anim, bool isInterrupted);
 
   EShelterMobState state = EShelterMobState::processing;
-  class UAnimMontage *AttackMontage;
-  class UAnimMontage *DeathMontage;
+  class UAnimMontage *attackMontage;
+  class UAnimMontage *deathMontage;
   class UStaticMeshComponent *mushroomMesh;
 };

@@ -11,18 +11,18 @@
 
 UShelterWeaponComponent::UShelterWeaponComponent()
 {
-  MuzzleOffset = FVector(100.0f, 0.0f, 10.0f);
+  MuzzleOffset = vec(100.0f, 0.0f, 10.0f);
 }
 
 void UShelterWeaponComponent::Fire()
 {
   LOG("fire");
-  CHECK_RET(Character != nullptr && Character->GetController() != nullptr);
+  CHECK_RET(character && character->GetController());
 
   CHECK_RET(ProjectileClass)
 
-  auto PlayerController = Cast<APlayerController>(Character->GetController());
-  const auto SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+  auto playerController = Cast<APlayerController>(character->GetController());
+  const auto SpawnRotation = playerController->PlayerCameraManager->GetCameraRotation();
   const auto SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 
   FActorSpawnParameters ActorSpawnParams;
@@ -34,10 +34,10 @@ void UShelterWeaponComponent::Fire()
   World->SpawnActor<AShelterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 
   CHECK_RET(FireSound);
-  UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+  UGameplayStatics::PlaySoundAtLocation(this, FireSound, character->GetActorLocation());
 
   CHECK_RET(FireAnimation);
-  auto AnimInstance = Character->GetMesh1P()->GetAnimInstance();
+  auto AnimInstance = character->getMesh1P()->GetAnimInstance();
   CHECK_RET(AnimInstance);
   AnimInstance->Montage_Play(FireAnimation, 1.f);
 }
@@ -46,12 +46,12 @@ void UShelterWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
   Super::EndPlay(EndPlayReason);
 
-  CHECK_RET(Character);
-
-  auto PlayerController = Cast<APlayerController>(Character->GetController());
-  CHECK_RET(PlayerController);
-  auto Subsystem =
-    ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-  CHECK_RET(PlayerController);
-  Subsystem->RemoveMappingContext(FireMappingContext);
+  CHECK_RET(character);
+  if (auto playerController = Cast<APlayerController>(character->GetController()))
+  {
+    CHECK_RET(playerController);
+    auto inputSubsys =
+      ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer());
+    inputSubsys->RemoveMappingContext(FireMappingContext);
+  }
 }

@@ -12,12 +12,12 @@ AShelterScrap::AShelterScrap()
 }
 
 auto AShelterScrap::onHit(UPrimitiveComponent *,
-                          AActor *OtherActor,
+                          AActor *otherActor,
                           UPrimitiveComponent *,
                           FVector,
                           const FHitResult &) -> void
 {
-  if (auto character = Cast<AShelterCharacter>(OtherActor))
+  if (auto character = Cast<AShelterCharacter>(otherActor))
   {
     LOG("character");
     character->addScrap();

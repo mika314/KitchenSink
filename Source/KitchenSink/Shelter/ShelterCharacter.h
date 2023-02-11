@@ -22,13 +22,13 @@ class AShelterCharacter final : public ACharacter
 
 public:
   AShelterCharacter();
-  auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
   auto addMedkit() -> void;
   auto addScrap() -> void;
   auto applyDamage(float) -> void;
   auto applyShelterDamage(float) -> void;
   auto getHp() const -> float;
   auto getHudUi() -> class UShelterHudUi *;
+  auto getMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
 
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -52,6 +52,12 @@ private:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
   class UInputAction *LookAction;
 
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+  class UInputAction *HealAction;
+
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+  class UInputAction *RepairAction;
+
   UFUNCTION(BlueprintCallable, Category = Weapon)
   bool GetHasRifle() const { return true; };
 
@@ -61,8 +67,9 @@ private:
   int medkits;
 
   auto BeginPlay() -> void final;
-  auto GetFirstPersonCameraComponent() const -> UCameraComponent * { return FirstPersonCameraComponent; }
-  auto Look(const FInputActionValue &Value) -> void;
-  auto Move(const FInputActionValue &Value) -> void;
+  auto look(const FInputActionValue &Value) -> void;
+  auto move(const FInputActionValue &Value) -> void;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
+  auto heal() -> void;
+  auto repair() -> void;
 };

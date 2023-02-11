@@ -11,7 +11,7 @@ AShelterProjectile::AShelterProjectile()
   CollisionComp->InitSphereRadius(5.0f);
   CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
   CollisionComp->OnComponentHit.AddDynamic(
-    this, &AShelterProjectile::OnHit); // set up a notification for when this component hits
+    this, &AShelterProjectile::onHit); // set up a notification for when this component hits
                                        // something blocking
 
   CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -29,26 +29,26 @@ AShelterProjectile::AShelterProjectile()
   InitialLifeSpan = 3.0f;
 }
 
-void AShelterProjectile::OnHit(UPrimitiveComponent * /*HitComp*/,
-                               AActor *OtherActor,
-                               UPrimitiveComponent *OtherComp,
-                               FVector /*NormalImpulse*/,
-                               const FHitResult & /*Hit*/)
+void AShelterProjectile::onHit(UPrimitiveComponent * /*hitComp*/,
+                               AActor *otherActor,
+                               UPrimitiveComponent *otherComp,
+                               FVector /*normalImpulse*/,
+                               const FHitResult & /*hit*/)
 {
-  if (!OtherActor)
+  if (!otherActor)
     return;
-  if (OtherActor == this)
+  if (otherActor == this)
     return;
 
-  if ((OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+  if (otherComp && otherComp->IsSimulatingPhysics())
   {
-    OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+    otherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 
     Destroy();
     return;
   }
 
-  if (auto mob = Cast<AShelterMob>(OtherActor))
+  if (auto mob = Cast<AShelterMob>(otherActor))
   {
     mob->die();
     Destroy();

@@ -9,8 +9,8 @@
 #include <Kismet/GameplayStatics.h>
 
 AShelterMob::AShelterMob()
-  : AttackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
-    DeathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage")),
+  : attackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
+    deathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage")),
     mushroomMesh(CreateDefaultSubobject<UStaticMeshComponent>("mushrumMesh"))
 {
   auto mesh = GetMesh();
@@ -32,30 +32,28 @@ auto AShelterMob::BeginPlay() -> void
 {
   Super::BeginPlay();
 
-  auto MoveComp =
+  auto moveComp =
     Cast<UCharacterMovementComponent>(GetComponentByClass(UCharacterMovementComponent::StaticClass()));
-  CHECK_RET(MoveComp);
-  MoveComp->MaxWalkSpeed = 300.0f;
+  CHECK_RET(moveComp);
+  moveComp->MaxWalkSpeed = 300.0f;
 
-  auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
-  CHECK_RET(AnimInstance);
-  AnimInstance->OnMontageEnded.AddDynamic(this, &AShelterMob::OnMontageEnded);
-  AnimInstance->OnMontageBlendingOut.AddDynamic(this, &AShelterMob::OnMontageBlendingOut);
+  auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+  CHECK_RET(animInst);
+  animInst->OnMontageEnded.AddDynamic(this, &AShelterMob::onMontageEnded);
+  animInst->OnMontageBlendingOut.AddDynamic(this, &AShelterMob::onMontageBlendingOut);
 
   setupAi();
 }
 
 auto AShelterMob::setupAi() -> void
 {
-  auto AIController = Cast<AAIController>(GetController());
-  CHECK_RET(AIController);
-
-  AIController->ReceiveMoveCompleted.AddDynamic(this, &AShelterMob::OnMoveToActorFinished);
-
+  auto aiController = Cast<AAIController>(GetController());
+  CHECK_RET(aiController);
+  aiController->ReceiveMoveCompleted.AddDynamic(this, &AShelterMob::onMoveToActorFinished);
   state = EShelterMobState::processing;
 }
 
-auto AShelterMob::OnMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type) -> void
+auto AShelterMob::onMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type) -> void
 {
   processState();
 }
@@ -67,9 +65,8 @@ auto AShelterMob::processState() -> void
   auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
   CHECK_RET(character);
 
-  const auto DistanceToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
-
-  if (DistanceToPlayer < 350.f)
+  const auto distToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
+  if (distToPlayer < 350.f)
     state = EShelterMobState::attacking;
   else
     state = EShelterMobState::processing;
@@ -85,46 +82,46 @@ auto AShelterMob::Tick(float dt) -> void
   Super::Tick(dt);
   if (state == EShelterMobState::dead)
     return;
+
   switch (state)
   {
   case EShelterMobState::attacking: {
     LOG("Attack Montage", GetWorld()->GetTimeSeconds());
-    auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
-    CHECK_RET(AnimInstance);
-    AnimInstance->Montage_Play(AttackMontage, 1.0f);
+    auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+    CHECK_RET(animInst);
+    animInst->Montage_Play(attackMontage, 1.0f);
     state = EShelterMobState::busy;
-
     break;
   }
   case EShelterMobState::processing: {
-    auto AIController = Cast<AAIController>(GetController());
-    CHECK_RET(AIController);
+    auto aiController = Cast<AAIController>(GetController());
+    CHECK_RET(aiController);
     auto target = [&]() -> AActor * {
       if (rand() % 2 == 0)
         return GetWorld()->GetFirstPlayerController()->GetPawn();
       else
       {
-        TArray<AActor *> ShelterDestroyPoints;
+        TArray<AActor *> shelterDestroyPoints;
 
         UGameplayStatics::GetAllActorsOfClass(
-          GetWorld(), AShelterDestroyPoint::StaticClass(), ShelterDestroyPoints);
+          GetWorld(), AShelterDestroyPoint::StaticClass(), shelterDestroyPoints);
 
-        AActor *ClosestShelterDestroyPoint = nullptr;
-        auto ClosestDistance = MAX_FLT;
-        for (auto ShelterDestroyPoint : ShelterDestroyPoints)
+        AActor *closestShelterDestroyPoint = nullptr;
+        auto closestDistance = MAX_FLT;
+        for (auto shelterDestroyPoint : shelterDestroyPoints)
         {
-          const auto Distance = GetDistanceTo(ShelterDestroyPoint);
-          if (Distance < ClosestDistance)
+          const auto distance = GetDistanceTo(shelterDestroyPoint);
+          if (distance < closestDistance)
           {
-            ClosestShelterDestroyPoint = ShelterDestroyPoint;
-            ClosestDistance = Distance;
+            closestShelterDestroyPoint = shelterDestroyPoint;
+            closestDistance = distance;
           }
         }
-        return ClosestShelterDestroyPoint;
+        return closestShelterDestroyPoint;
       }
     }();
     CHECK_RET(target);
-    auto ret = AIController->MoveToActor(target, 100.0f, true, true, true, 0, true);
+    auto ret = aiController->MoveToActor(target, 100.0f, true, true, true, 0, true);
     switch (ret)
     {
     case EPathFollowingRequestResult::Failed: state = EShelterMobState::processing; break;
@@ -136,26 +133,24 @@ auto AShelterMob::Tick(float dt) -> void
   }
 }
 
-void AShelterMob::OnMontageEnded(UAnimMontage *anim, bool)
+void AShelterMob::onMontageEnded(UAnimMontage *anim, bool)
 {
   if (state == EShelterMobState::dead)
     return;
-  if (anim == AttackMontage)
-    LineTraceToDetermineHit();
+  if (anim == attackMontage)
+    lineTraceToDetermineHit();
   else
     processState();
 }
 
-auto AShelterMob::LineTraceToDetermineHit() -> void
+auto AShelterMob::lineTraceToDetermineHit() -> void
 {
-  FVector Start = GetActorLocation();
-  FVector End = Start + GetActorForwardVector() * 500.f;
 
   auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
   CHECK_RET(character);
 
-  const auto DistanceToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
-  if (DistanceToPlayer < 350.f)
+  const auto distToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
+  if (distToPlayer < 350.f)
   {
     LOG("Hit player by distance");
     character->applyDamage(0.03f);
@@ -163,24 +158,26 @@ auto AShelterMob::LineTraceToDetermineHit() -> void
     return;
   }
 
-  FHitResult HitResult;
-  bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+  const auto start = GetActorLocation();
+  const auto end = start + GetActorForwardVector() * 500.f;
+  FHitResult hitResult;
+  bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
   if (!bHit)
   {
     LOG("Did not hit anything");
     state = EShelterMobState::processing;
     return;
   }
-  AActor *HitActor = HitResult.GetActor();
+  AActor *hitActor = hitResult.GetActor();
 
-  if (HitActor->IsA<AShelterCharacter>())
+  if (hitActor->IsA<AShelterCharacter>())
   {
     LOG("Hit player");
     character->applyDamage(0.03f);
     state = EShelterMobState::attacking;
     return;
   }
-  if (HitActor->IsA<AShelterShelter>())
+  if (hitActor->IsA<AShelterShelter>())
   {
     LOG("Hit shelter building");
     character->applyShelterDamage(0.03f);
@@ -188,21 +185,20 @@ auto AShelterMob::LineTraceToDetermineHit() -> void
     return;
   }
 
-  LOG("Hit something else", HitActor->GetName());
+  LOG("Hit something else", hitActor->GetName());
   state = EShelterMobState::processing;
-  return;
 }
 
-void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
+void AShelterMob::onMontageBlendingOut(UAnimMontage *anim, bool)
 {
-  if (state == EShelterMobState::dead && anim == DeathMontage)
+  if (state == EShelterMobState::dead && anim == deathMontage)
   {
     Destroy();
 
     if (rand() % 10 == 0)
     {
-      auto NewActor = [&]() -> AActor * {
-        const auto SpawnLocation = getLoc(this) + vec(0., 0., 150.f);
+      auto newActor = [&]() -> AActor * {
+        const auto spawnLoc = getLoc(this) + vec(0., 0., 150.f);
         FActorSpawnParameters ActorSpawnParams;
         ActorSpawnParams.SpawnCollisionHandlingOverride =
           ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
@@ -211,19 +207,17 @@ void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
         CHECK_RET(World, nullptr);
         if (rand() % 2 == 0)
           return World->SpawnActor<AActor>(
-            AShelterScrap::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+            AShelterScrap::StaticClass(), spawnLoc, rot(0., 0., 0.), ActorSpawnParams);
         else
           return World->SpawnActor<AActor>(
-            AShelterMedkit::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+            AShelterMedkit::StaticClass(), spawnLoc, rot(0., 0., 0.), ActorSpawnParams);
       }();
-      if (NewActor)
+      if (newActor)
       {
-        auto PrimitiveComponent = Cast<UPrimitiveComponent>(NewActor->GetRootComponent());
-        CHECK_RET(PrimitiveComponent);
-        PrimitiveComponent->AddImpulse(
-          FVector(FMath::RandRange(-200.f, 200.f), FMath::RandRange(-200.f, 200.f), 600.f),
-          NAME_None,
-          true);
+        auto primitiveComp = Cast<UPrimitiveComponent>(newActor->GetRootComponent());
+        CHECK_RET(primitiveComp);
+        primitiveComp->AddImpulse(
+          vec(FMath::RandRange(-200.f, 200.f), FMath::RandRange(-200.f, 200.f), 600.f), NAME_None, true);
       }
     }
   }
@@ -234,18 +228,18 @@ auto AShelterMob::die() -> void
   if (state == EShelterMobState::dead)
     return;
   LOG("Death Montage", GetWorld()->GetTimeSeconds());
-  auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
-  CHECK_RET(AnimInstance);
-  AnimInstance->Montage_Play(DeathMontage, 1.0f);
+  auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+  CHECK_RET(animInst);
+  animInst->Montage_Play(deathMontage, 1.0f);
   state = EShelterMobState::dead;
   SetActorEnableCollision(false);
 }
 
 auto AShelterMob::EndPlay(const EEndPlayReason::Type reason) -> void
 {
-  auto AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
-  CHECK_RET(AnimInstance);
-  AnimInstance->OnMontageEnded.RemoveDynamic(this, &AShelterMob::OnMontageEnded);
-  AnimInstance->OnMontageBlendingOut.RemoveDynamic(this, &AShelterMob::OnMontageBlendingOut);
+  auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
+  CHECK_RET(animInst);
+  animInst->OnMontageEnded.RemoveDynamic(this, &AShelterMob::onMontageEnded);
+  animInst->OnMontageBlendingOut.RemoveDynamic(this, &AShelterMob::onMontageBlendingOut);
   Super::EndPlay(reason);
 }

@@ -14,7 +14,7 @@ UCLASS(config = Game)
 class AShelterProjectile final : public AActor
 {
   GENERATED_BODY()
-
+private:
   UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
   USphereComponent *CollisionComp;
 
@@ -26,14 +26,13 @@ class AShelterProjectile final : public AActor
 
 public:
   AShelterProjectile();
+  auto getCollisionComp() const -> USphereComponent * { return CollisionComp; }
+  auto getProjectileMovement() const -> UProjectileMovementComponent * { return ProjectileMovement; }
 
   UFUNCTION()
-  void OnHit(UPrimitiveComponent *HitComp,
-             AActor *OtherActor,
-             UPrimitiveComponent *OtherComp,
-             FVector NormalImpulse,
-             const FHitResult &Hit);
-
-  auto GetCollisionComp() const -> USphereComponent * { return CollisionComp; }
-  auto GetProjectileMovement() const -> UProjectileMovementComponent * { return ProjectileMovement; }
+  void onHit(UPrimitiveComponent *hitComp,
+             AActor *otherActor,
+             UPrimitiveComponent *otherComp,
+             FVector normalImpulse,
+             const FHitResult &hit);
 };

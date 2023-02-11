@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "ShelterWeaponComponent.generated.h"
 #include <Components/SkeletalMeshComponent.h>
 #include <CoreMinimal.h>
+
+#include "ShelterWeaponComponent.generated.h"
 
 class AShelterCharacter;
 
@@ -42,5 +43,5 @@ private:
   void EndPlay(const EEndPlayReason::Type EndPlayReason) final;
 
 public:
-  AShelterCharacter *Character;
+  AShelterCharacter *character;
 };

@@ -3,6 +3,7 @@
 #include "ShelterCharacter.h"
 #include "ShelterHud.h"
 #include "ShelterHudUi.h"
+#include "ShelterShelter.h"
 #include "ShelterWeaponComponent.h"
 #include <Animation/AnimInstance.h>
 #include <Camera/CameraComponent.h>
@@ -19,40 +20,40 @@ AShelterCharacter::AShelterCharacter()
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
   FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-  FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
+  FirstPersonCameraComponent->SetRelativeLocation(vec(-10.f, 0.f, 60.f)); // Position the camera
   FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
   Mesh1P->SetOnlyOwnerSee(true);
   Mesh1P->SetupAttachment(FirstPersonCameraComponent);
   Mesh1P->bCastDynamicShadow = false;
   Mesh1P->CastShadow = false;
-  Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+  Mesh1P->SetRelativeLocation(vec(-30.f, 0.f, -150.f));
 
   FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
   shelterWeapon->AttachToComponent(Mesh1P, AttachmentRules, FName(TEXT("GripPoint")));
-  shelterWeapon->Character = this;
+  shelterWeapon->character = this;
 }
 
-void AShelterCharacter::BeginPlay()
+auto AShelterCharacter::BeginPlay() -> void
 {
   Super::BeginPlay();
 
-  auto PlayerController = Cast<APlayerController>(GetController());
-  CHECK_RET(PlayerController);
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
 
-  auto Subsystem =
-    ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-  CHECK_RET(Subsystem);
+  auto inputSubsys =
+    ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer());
+  CHECK_RET(inputSubsys);
 
-  Subsystem->AddMappingContext(DefaultMappingContext, 0);
+  inputSubsys->AddMappingContext(DefaultMappingContext, 0);
 
   CHECK_RET(shelterWeapon);
-  Subsystem->AddMappingContext(shelterWeapon->FireMappingContext, 1);
+  inputSubsys->AddMappingContext(shelterWeapon->FireMappingContext, 1);
 
-  auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-  CHECK_RET(EnhancedInputComponent);
+  auto inputComp = Cast<UEnhancedInputComponent>(playerController->InputComponent);
+  CHECK_RET(inputComp);
 
-  EnhancedInputComponent->BindAction(
+  inputComp->BindAction(
     shelterWeapon->FireAction, ETriggerEvent::Triggered, shelterWeapon, &UShelterWeaponComponent::Fire);
 
   hp = 1.f;
@@ -63,38 +64,32 @@ void AShelterCharacter::BeginPlay()
   hudUi->setShelterHp(shelterHp);
 }
 
-void AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
+auto AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *playerInputComp) -> void
 {
-  auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-  CHECK_RET(EnhancedInputComponent);
-
-  EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-  EnhancedInputComponent->BindAction(
-    JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-  EnhancedInputComponent->BindAction(
-    MoveAction, ETriggerEvent::Triggered, this, &AShelterCharacter::Move);
-
-  EnhancedInputComponent->BindAction(
-    LookAction, ETriggerEvent::Triggered, this, &AShelterCharacter::Look);
+  auto inputComp = CastChecked<UEnhancedInputComponent>(playerInputComp);
+  CHECK_RET(inputComp);
+  inputComp->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+  inputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+  inputComp->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AShelterCharacter::move);
+  inputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShelterCharacter::look);
+  inputComp->BindAction(HealAction, ETriggerEvent::Triggered, this, &AShelterCharacter::heal);
+  inputComp->BindAction(RepairAction, ETriggerEvent::Triggered, this, &AShelterCharacter::repair);
 }
 
-void AShelterCharacter::Move(const FInputActionValue &Value)
+auto AShelterCharacter::move(const FInputActionValue &v) -> void
 {
-  const auto MovementVector = Value.Get<FVector2D>();
+  const auto moveVec = v.Get<FVector2D>();
   CHECK_RET(Controller)
-
-  AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-  AddMovementInput(GetActorRightVector(), MovementVector.X);
+  AddMovementInput(GetActorForwardVector(), moveVec.Y);
+  AddMovementInput(GetActorRightVector(), moveVec.X);
 }
 
-void AShelterCharacter::Look(const FInputActionValue &Value)
+auto AShelterCharacter::look(const FInputActionValue &v) -> void
 {
-  const auto LookAxisVector = Value.Get<FVector2D>();
+  const auto lookAxisVec = v.Get<FVector2D>();
   CHECK_RET(Controller);
-
-  AddControllerYawInput(LookAxisVector.X);
-  AddControllerPitchInput(LookAxisVector.Y);
+  AddControllerYawInput(lookAxisVec.X);
+  AddControllerPitchInput(lookAxisVec.Y);
 }
 
 auto AShelterCharacter::getHp() const -> float
@@ -141,4 +136,50 @@ auto AShelterCharacter::addMedkit() -> void
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setMedkits(medkits);
+}
+
+auto AShelterCharacter::heal() -> void
+{
+  if (medkits <= 0)
+    return;
+  if (hp > 1.f)
+    return;
+  const auto healAmount = .125f;
+  hp += healAmount;
+  --medkits;
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
+  hudUi->setHp(hp);
+  hudUi->setMedkits(medkits);
+}
+
+auto AShelterCharacter::repair() -> void
+{
+  if (scrap <= 0)
+    return;
+  if (shelterHp > 1.f)
+    return;
+  const auto start = GetActorLocation();
+  const auto end = start + GetActorForwardVector() * 500.f;
+  FHitResult hitResult;
+  auto isHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+  if (!isHit)
+  {
+    LOG("Not facing anything");
+    return;
+  }
+  const auto hitActor = hitResult.GetActor();
+  if (!hitActor->IsA<AShelterShelter>())
+  {
+    LOG("Facing something else", hitActor->GetName());
+    return;
+  }
+  LOG("Facing shelter building");
+  const auto repairAmount = .025f;
+  shelterHp += repairAmount;
+  --scrap;
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
+  hudUi->setShelterHp(shelterHp);
+  hudUi->setScrap(scrap);
 }

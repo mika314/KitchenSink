@@ -10,29 +10,27 @@ AShelterMobSpawner::AShelterMobSpawner() : Root(CreateDefaultSubobject<USceneCom
 auto AShelterMobSpawner::BeginPlay() -> void
 {
   Super::BeginPlay();
-
   GetWorld()->GetTimerManager().SetTimer(
-    SpawnTimerHandle, [this]() { SpawnMobs(); }, SpawnDelay, true);
+    hSpawnTimer, [this]() { spawnMobs(); }, SpawnDelay, true);
 }
 
-auto AShelterMobSpawner::SpawnMobs() -> void
+auto AShelterMobSpawner::spawnMobs() -> void
 {
   LOG("Spawn mobs", SpawnAmount);
-  for (int i = 0; i < SpawnAmount; ++i)
+  for (auto i = 0; i < SpawnAmount; ++i)
   {
-    ++MobsSpawned;
-
-    const auto location = GetActorLocation();
+    ++mobsSpawned;
+    const auto l = getLoc(this);
     const auto angle = FMath::RandRange(0.0f, 360.0f);
-    const auto x = location.X + SpawnRadius * FMath::Cos(angle);
-    const auto y = location.Y + SpawnRadius * FMath::Sin(angle);
-    const auto spawnLocation = vec(x, y, location.Z);
-    GetWorld()->SpawnActor<AShelterMob>(MobToSpawn, spawnLocation, rot(0.0f, 0.0f, 0.0f));
+    const auto x = l.X + SpawnRadius * FMath::Cos(angle);
+    const auto y = l.Y + SpawnRadius * FMath::Sin(angle);
+    const auto spawnL = vec(x, y, l.Z);
+    GetWorld()->SpawnActor<AShelterMob>(MobToSpawn, spawnL, rot(0.0f, 0.0f, 0.0f));
   }
 }
 
 auto AShelterMobSpawner::EndPlay(const EEndPlayReason::Type reason) -> void
 {
-  GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+  GetWorld()->GetTimerManager().ClearTimer(hSpawnTimer);
   Super::EndPlay(reason);
 }

@@ -16,10 +16,11 @@ public:
 private:
   auto BeginPlay() -> void final;
   auto EndPlay(const EEndPlayReason::Type) -> void final;
+  auto spawnMobs() -> void;
 
-  int32 MobsSpawned = 0;
-  float TimeSinceLastSpawn = 0.0f;
-  FTimerHandle SpawnTimerHandle;
+  int mobsSpawned = 0;
+  float timeSinceLastSpawn = 0.0f;
+  FTimerHandle hSpawnTimer;
 
   UPROPERTY(VisibleAnywhere)
   class USceneComponent *Root;
@@ -35,6 +36,4 @@ private:
 
   UPROPERTY(EditAnywhere, Category = "Spawning")
   float SpawnDelay = 3.0f;
-
-  auto SpawnMobs() -> void;
 };

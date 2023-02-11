@@ -13,9 +13,9 @@ public:
 
 private:
   UFUNCTION()
-  void onHit(UPrimitiveComponent *HitComp,
-             AActor *OtherActor,
-             UPrimitiveComponent *OtherComp,
-             FVector NormalImpulse,
-             const FHitResult &Hit);
+  void onHit(UPrimitiveComponent *hitComp,
+             AActor *otherActor,
+             UPrimitiveComponent *otherComp,
+             FVector normalImpulse,
+             const FHitResult &hit);
 };
