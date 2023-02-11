@@ -57,13 +57,8 @@ void AShelterCharacter::BeginPlay()
 
   hp = 1.f;
   shelterHp = 1.f;
-
-  auto playerController = Cast<APlayerController>(GetController());
-  CHECK_RET(playerController);
-
-  auto hud = Cast<AShelterHud>(playerController->GetHUD());
-  CHECK_RET(hud);
-  auto hudUi = hud->getHudUi();
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
   hudUi->setHp(getHp());
   hudUi->setShelterHp(shelterHp);
 }
@@ -110,36 +105,40 @@ auto AShelterCharacter::getHp() const -> float
 auto AShelterCharacter::applyDamage(float v) -> void
 {
   hp -= v;
-
-  auto playerController = Cast<APlayerController>(GetController());
-  CHECK_RET(playerController);
-
-  auto hud = Cast<AShelterHud>(playerController->GetHUD());
-  CHECK_RET(hud);
-  auto hudUi = hud->getHudUi();
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
   hudUi->setHp(hp);
+}
+
+auto AShelterCharacter::getHudUi() -> UShelterHudUi *
+{
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController, nullptr);
+  auto hud = Cast<AShelterHud>(playerController->GetHUD());
+  CHECK_RET(hud, nullptr);
+  return hud->getHudUi();
 }
 
 auto AShelterCharacter::addScrap() -> void
 {
   scrap += rand() % 10 + 1;
-  auto playerController = Cast<APlayerController>(GetController());
-  CHECK_RET(playerController);
-
-  auto hud = Cast<AShelterHud>(playerController->GetHUD());
-  CHECK_RET(hud);
-  auto hudUi = hud->getHudUi();
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
   hudUi->setScrap(scrap);
 }
 
 auto AShelterCharacter::applyShelterDamage(float v) -> void
 {
   shelterHp -= v * 0.01f;
-  auto playerController = Cast<APlayerController>(GetController());
-  CHECK_RET(playerController);
-
-  auto hud = Cast<AShelterHud>(playerController->GetHUD());
-  CHECK_RET(hud);
-  auto hudUi = hud->getHudUi();
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
   hudUi->setShelterHp(shelterHp);
+}
+
+auto AShelterCharacter::addMedkit() -> void
+{
+  ++medkits;
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
+  hudUi->setMedkits(medkits);
 }

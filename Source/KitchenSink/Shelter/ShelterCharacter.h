@@ -23,10 +23,12 @@ class AShelterCharacter final : public ACharacter
 public:
   AShelterCharacter();
   auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
-  auto getHp() const -> float;
+  auto addMedkit() -> void;
+  auto addScrap() -> void;
   auto applyDamage(float) -> void;
   auto applyShelterDamage(float) -> void;
-  auto addScrap() -> void;
+  auto getHp() const -> float;
+  auto getHudUi() -> class UShelterHudUi *;
 
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -56,6 +58,7 @@ private:
   float hp;
   float shelterHp;
   int scrap;
+  int medkits;
 
   auto BeginPlay() -> void final;
   auto GetFirstPersonCameraComponent() const -> UCameraComponent * { return FirstPersonCameraComponent; }

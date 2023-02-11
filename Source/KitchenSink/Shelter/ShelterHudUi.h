@@ -13,6 +13,7 @@ class KITCHENSINK_API UShelterHudUi : public UUserWidget
   GENERATED_BODY()
 public:
   auto setHp(float) -> void;
+  auto setMedkits(int) -> void;
   auto setScrap(int) -> void;
   auto setShelterHp(float) -> void;
 };

@@ -1,6 +1,7 @@
 #include "ShelterMob.h"
 #include "ShelterCharacter.h"
 #include "ShelterDestroyPoint.h"
+#include "ShelterMedkit.h"
 #include "ShelterScrap.h"
 #include "ShelterShelter.h"
 #include <Animation/AnimBlueprint.h>
@@ -192,23 +193,29 @@ auto AShelterMob::LineTraceToDetermineHit() -> void
   return;
 }
 
-void AShelterMob::OnMontageBlendingOut(UAnimMontage *, bool)
+void AShelterMob::OnMontageBlendingOut(UAnimMontage *anim, bool)
 {
-  if (state == EShelterMobState::dead)
+  if (state == EShelterMobState::dead && anim == DeathMontage)
   {
     Destroy();
 
     if (rand() % 10 == 0)
     {
-      const auto SpawnLocation = getLoc(this) + vec(0., 0., 150.f);
-      FActorSpawnParameters ActorSpawnParams;
-      ActorSpawnParams.SpawnCollisionHandlingOverride =
-        ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+      auto NewActor = [&]() -> AActor * {
+        const auto SpawnLocation = getLoc(this) + vec(0., 0., 150.f);
+        FActorSpawnParameters ActorSpawnParams;
+        ActorSpawnParams.SpawnCollisionHandlingOverride =
+          ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-      auto World = GetWorld();
-      CHECK_RET(World)
-      auto NewActor = World->SpawnActor<AShelterScrap>(
-        AShelterScrap::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+        auto World = GetWorld();
+        CHECK_RET(World, nullptr);
+        if (rand() % 2 == 0)
+          return World->SpawnActor<AActor>(
+            AShelterScrap::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+        else
+          return World->SpawnActor<AActor>(
+            AShelterMedkit::StaticClass(), SpawnLocation, rot(0., 0., 0.), ActorSpawnParams);
+      }();
       if (NewActor)
       {
         auto PrimitiveComponent = Cast<UPrimitiveComponent>(NewActor->GetRootComponent());
@@ -231,6 +238,7 @@ auto AShelterMob::die() -> void
   CHECK_RET(AnimInstance);
   AnimInstance->Montage_Play(DeathMontage, 1.0f);
   state = EShelterMobState::dead;
+  SetActorEnableCollision(false);
 }
 
 auto AShelterMob::EndPlay(const EEndPlayReason::Type reason) -> void

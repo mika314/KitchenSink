@@ -22,3 +22,10 @@ auto UShelterHudUi::setShelterHp(float v) -> void
   CHECK_RET(widget);
   widget->SetPercent(v);
 }
+
+auto UShelterHudUi::setMedkits(int v) -> void
+{
+  auto widget = getProp<UTextBlock>(this, TEXT("MedkitsTb"));
+  CHECK_RET(widget);
+  widget->SetText(FText::Format(FTextFormat(LOC("{0}")), v));
+}

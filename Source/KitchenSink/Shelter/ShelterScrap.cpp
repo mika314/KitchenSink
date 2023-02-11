@@ -11,11 +11,6 @@ AShelterScrap::AShelterScrap()
   mesh->OnComponentHit.AddDynamic(this, &AShelterScrap::onHit);
 }
 
-auto AShelterScrap::BeginPlay() -> void
-{
-  Super::BeginPlay();
-}
-
 auto AShelterScrap::onHit(UPrimitiveComponent *,
                           AActor *OtherActor,
                           UPrimitiveComponent *,

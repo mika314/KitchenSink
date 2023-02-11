@@ -12,8 +12,6 @@ public:
   AShelterScrap();
 
 private:
-  auto BeginPlay() -> void final;
-
   UFUNCTION()
   void onHit(UPrimitiveComponent *HitComp,
              AActor *OtherActor,
