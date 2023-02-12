@@ -29,6 +29,8 @@ public:
   auto getHp() const -> float;
   auto getHudUi() -> class UShelterHudUi *;
   auto getMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
+  auto getScrap() const -> int;
+  auto getShelterHp() const -> float;
 
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -58,6 +60,9 @@ private:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
   class UInputAction *RepairAction;
 
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+  class UInputAction *PlaceTowerAction;
+
   UFUNCTION(BlueprintCallable, Category = Weapon)
   bool GetHasRifle() const { return true; };
 
@@ -67,9 +72,10 @@ private:
   int medkits;
 
   auto BeginPlay() -> void final;
-  auto look(const FInputActionValue &Value) -> void;
-  auto move(const FInputActionValue &Value) -> void;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
   auto heal() -> void;
+  auto look(const FInputActionValue &Value) -> void;
+  auto move(const FInputActionValue &Value) -> void;
+  auto placeTower() -> void;
   auto repair() -> void;
 };

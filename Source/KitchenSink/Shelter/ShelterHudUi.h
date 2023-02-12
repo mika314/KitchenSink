@@ -16,4 +16,8 @@ public:
   auto setMedkits(int) -> void;
   auto setScrap(int) -> void;
   auto setShelterHp(float) -> void;
+  auto mobDied() -> void;
+
+private:
+  int mobs = 250;
 };

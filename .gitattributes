@@ -16,3 +16,4 @@
 *.umap filter=lfs diff=lfs merge=lfs -text
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.xcf filter=lfs diff=lfs merge=lfs -text
+*.fspy filter=lfs diff=lfs merge=lfs -text

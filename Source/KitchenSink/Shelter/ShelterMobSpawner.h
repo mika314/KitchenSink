@@ -32,8 +32,5 @@ private:
   TSubclassOf<class AShelterMob> MobToSpawn;
 
   UPROPERTY(EditAnywhere, Category = "Spawning")
-  int SpawnAmount = 5;
-
-  UPROPERTY(EditAnywhere, Category = "Spawning")
   float SpawnDelay = 3.0f;
 };

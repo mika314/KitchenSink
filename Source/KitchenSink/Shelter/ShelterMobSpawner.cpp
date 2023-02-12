@@ -1,4 +1,6 @@
 #include "ShelterMobSpawner.h"
+#include "RepairAmount.h"
+#include "ShelterCharacter.h"
 #include "ShelterMob.h"
 
 AShelterMobSpawner::AShelterMobSpawner() : Root(CreateDefaultSubobject<USceneComponent>(TEXT("Root")))
@@ -16,8 +18,18 @@ auto AShelterMobSpawner::BeginPlay() -> void
 
 auto AShelterMobSpawner::spawnMobs() -> void
 {
-  LOG("Spawn mobs", SpawnAmount);
-  for (auto i = 0; i < SpawnAmount; ++i)
+  auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+  CHECK_RET(character);
+  auto spawnAmountFloat =
+    2.f * std::exp(GetWorld()->GetTimeSeconds() * 0.005f *
+                   std::min(1.f, character->getShelterHp() + character->getScrap() * repairAmount()));
+  float intPart;
+  const auto fracPart = std::modf(spawnAmountFloat, &intPart);
+  const auto spawnAmount =
+    static_cast<int>(intPart + 0.01f) + (rand() % 1000 > static_cast<int>(fracPart * 1000) ? 0 : 1);
+
+  LOG("Spawn mobs", spawnAmount);
+  for (auto i = 0; i < spawnAmount; ++i)
   {
     ++mobsSpawned;
     const auto l = getLoc(this);

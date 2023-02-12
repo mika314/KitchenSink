@@ -1,9 +1,12 @@
 #include "ShelterMob.h"
 #include "ShelterCharacter.h"
 #include "ShelterDestroyPoint.h"
+#include "ShelterHud.h"
+#include "ShelterHudUi.h"
 #include "ShelterMedkit.h"
 #include "ShelterScrap.h"
 #include "ShelterShelter.h"
+#include "ShelterTower.h"
 #include <Animation/AnimBlueprint.h>
 #include <Animation/AnimMontage.h>
 #include <Kismet/GameplayStatics.h>
@@ -55,7 +58,7 @@ auto AShelterMob::setupAi() -> void
 
 auto AShelterMob::onMoveToActorFinished(FAIRequestID, EPathFollowingResult::Type) -> void
 {
-  processState();
+  state = EShelterMobState::attacking;
 }
 
 auto AShelterMob::processState() -> void
@@ -65,7 +68,7 @@ auto AShelterMob::processState() -> void
   auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
   CHECK_RET(character);
 
-  const auto distToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
+  const auto distToPlayer = (getLoc(character) - getLoc(this)).Size();
   if (distToPlayer < 350.f)
     state = EShelterMobState::attacking;
   else
@@ -86,7 +89,6 @@ auto AShelterMob::Tick(float dt) -> void
   switch (state)
   {
   case EShelterMobState::attacking: {
-    LOG("Attack Montage", GetWorld()->GetTimeSeconds());
     auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
     CHECK_RET(animInst);
     animInst->Montage_Play(attackMontage, 1.0f);
@@ -97,10 +99,10 @@ auto AShelterMob::Tick(float dt) -> void
     auto aiController = Cast<AAIController>(GetController());
     CHECK_RET(aiController);
     auto target = [&]() -> AActor * {
-      if (rand() % 2 == 0)
-        return GetWorld()->GetFirstPlayerController()->GetPawn();
-      else
+      switch (rand() % 3)
       {
+      case 0: return GetWorld()->GetFirstPlayerController()->GetPawn();
+      case 1: {
         TArray<AActor *> shelterDestroyPoints;
 
         UGameplayStatics::GetAllActorsOfClass(
@@ -119,14 +121,35 @@ auto AShelterMob::Tick(float dt) -> void
         }
         return closestShelterDestroyPoint;
       }
+      default: // case 2:
+      {
+        TArray<AActor *> towers;
+        UGameplayStatics::GetAllActorsOfClass(GetWorld(), AShelterTower::StaticClass(), towers);
+
+        AActor *closestTower = nullptr;
+        auto closestDistance = MAX_FLT;
+        for (auto tower : towers)
+        {
+          const auto distance = GetDistanceTo(tower);
+          if (distance < closestDistance)
+          {
+            closestTower = tower;
+            closestDistance = distance;
+          }
+        }
+        return closestTower;
+      }
+      }
     }();
-    CHECK_RET(target);
-    auto ret = aiController->MoveToActor(target, 100.0f, true, true, true, 0, true);
-    switch (ret)
+    if (target)
     {
-    case EPathFollowingRequestResult::Failed: state = EShelterMobState::processing; break;
-    case EPathFollowingRequestResult::AlreadyAtGoal: state = EShelterMobState::attacking; break;
-    case EPathFollowingRequestResult::RequestSuccessful: state = EShelterMobState::busy; break;
+      auto ret = aiController->MoveToActor(target, 100.0f, true, true, true, 0, true);
+      switch (ret)
+      {
+      case EPathFollowingRequestResult::Failed: state = EShelterMobState::processing; break;
+      case EPathFollowingRequestResult::AlreadyAtGoal: state = EShelterMobState::attacking; break;
+      case EPathFollowingRequestResult::RequestSuccessful: state = EShelterMobState::busy; break;
+      }
     }
   }
   break;
@@ -145,12 +168,11 @@ void AShelterMob::onMontageEnded(UAnimMontage *anim, bool)
 
 auto AShelterMob::lineTraceToDetermineHit() -> void
 {
-
   auto character = Cast<AShelterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
   CHECK_RET(character);
 
-  const auto distToPlayer = (character->GetActorLocation() - GetActorLocation()).Size();
-  if (distToPlayer < 350.f)
+  const auto distToPlayer = (getLoc(character) - getLoc(this)).Size();
+  if (distToPlayer < 7'00.f)
   {
     LOG("Hit player by distance");
     character->applyDamage(0.03f);
@@ -158,17 +180,21 @@ auto AShelterMob::lineTraceToDetermineHit() -> void
     return;
   }
 
-  const auto start = GetActorLocation();
+  const auto start = getLoc(this);
   const auto end = start + GetActorForwardVector() * 500.f;
   FHitResult hitResult;
   bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
   if (!bHit)
   {
-    LOG("Did not hit anything");
     state = EShelterMobState::processing;
     return;
   }
   AActor *hitActor = hitResult.GetActor();
+  if (!hitActor)
+  {
+    state = EShelterMobState::processing;
+    return;
+  }
 
   if (hitActor->IsA<AShelterCharacter>())
   {
@@ -179,13 +205,17 @@ auto AShelterMob::lineTraceToDetermineHit() -> void
   }
   if (hitActor->IsA<AShelterShelter>())
   {
-    LOG("Hit shelter building");
     character->applyShelterDamage(0.03f);
     state = EShelterMobState::attacking;
     return;
   }
+  if (auto tower = Cast<AShelterTower>(hitActor))
+  {
+    tower->applyDamage();
+    state = EShelterMobState::attacking;
+    return;
+  }
 
-  LOG("Hit something else", hitActor->GetName());
   state = EShelterMobState::processing;
 }
 
@@ -193,24 +223,31 @@ void AShelterMob::onMontageBlendingOut(UAnimMontage *anim, bool)
 {
   if (state == EShelterMobState::dead && anim == deathMontage)
   {
+    auto playerController = GetWorld()->GetFirstPlayerController();
+    CHECK_RET(playerController);
+    auto hud = Cast<AShelterHud>(playerController->GetHUD());
+    CHECK_RET(hud);
+    auto hudUi = hud->getHudUi();
+    hudUi->mobDied();
+
     Destroy();
 
     if (rand() % 10 == 0)
     {
       auto newActor = [&]() -> AActor * {
         const auto spawnLoc = getLoc(this) + vec(0., 0., 150.f);
-        FActorSpawnParameters ActorSpawnParams;
-        ActorSpawnParams.SpawnCollisionHandlingOverride =
+        FActorSpawnParameters params;
+        params.SpawnCollisionHandlingOverride =
           ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-        auto World = GetWorld();
-        CHECK_RET(World, nullptr);
-        if (rand() % 2 == 0)
-          return World->SpawnActor<AActor>(
-            AShelterScrap::StaticClass(), spawnLoc, rot(0., 0., 0.), ActorSpawnParams);
+        auto world = GetWorld();
+        CHECK_RET(world, nullptr);
+        if (rand() % 5 == 0)
+          return world->SpawnActor<AActor>(
+            AShelterMedkit::StaticClass(), spawnLoc, rot(0., 0., 0.), params);
         else
-          return World->SpawnActor<AActor>(
-            AShelterMedkit::StaticClass(), spawnLoc, rot(0., 0., 0.), ActorSpawnParams);
+          return world->SpawnActor<AActor>(
+            AShelterScrap::StaticClass(), spawnLoc, rot(0., 0., 0.), params);
       }();
       if (newActor)
       {
@@ -227,11 +264,11 @@ auto AShelterMob::die() -> void
 {
   if (state == EShelterMobState::dead)
     return;
-  LOG("Death Montage", GetWorld()->GetTimeSeconds());
   auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
   CHECK_RET(animInst);
   animInst->Montage_Play(deathMontage, 1.0f);
   state = EShelterMobState::dead;
+  SetLifeSpan(5.f);
   SetActorEnableCollision(false);
 }
 

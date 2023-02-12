@@ -1,9 +1,11 @@
 // (c) 2013 Mika Pi
 
 #include "ShelterCharacter.h"
+#include "RepairAmount.h"
 #include "ShelterHud.h"
 #include "ShelterHudUi.h"
 #include "ShelterShelter.h"
+#include "ShelterTower.h"
 #include "ShelterWeaponComponent.h"
 #include <Animation/AnimInstance.h>
 #include <Camera/CameraComponent.h>
@@ -58,10 +60,14 @@ auto AShelterCharacter::BeginPlay() -> void
 
   hp = 1.f;
   shelterHp = 1.f;
+  scrap = 0;
+  medkits = 0;
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setHp(getHp());
   hudUi->setShelterHp(shelterHp);
+  hudUi->setScrap(scrap);
+  hudUi->setMedkits(medkits);
 }
 
 auto AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *playerInputComp) -> void
@@ -74,6 +80,8 @@ auto AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *playerI
   inputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShelterCharacter::look);
   inputComp->BindAction(HealAction, ETriggerEvent::Triggered, this, &AShelterCharacter::heal);
   inputComp->BindAction(RepairAction, ETriggerEvent::Triggered, this, &AShelterCharacter::repair);
+  inputComp->BindAction(
+    PlaceTowerAction, ETriggerEvent::Triggered, this, &AShelterCharacter::placeTower);
 }
 
 auto AShelterCharacter::move(const FInputActionValue &v) -> void
@@ -124,7 +132,7 @@ auto AShelterCharacter::addScrap() -> void
 
 auto AShelterCharacter::applyShelterDamage(float v) -> void
 {
-  shelterHp -= v * 0.01f;
+  shelterHp -= v * 0.08f;
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setShelterHp(shelterHp);
@@ -157,10 +165,8 @@ auto AShelterCharacter::repair() -> void
 {
   if (scrap <= 0)
     return;
-  if (shelterHp > 1.f)
-    return;
-  const auto start = GetActorLocation();
-  const auto end = start + GetActorForwardVector() * 500.f;
+  const auto start = getLoc(this);
+  const auto end = start + GetControlRotation().Vector() * 5'00.f;
   FHitResult hitResult;
   auto isHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
   if (!isHit)
@@ -169,17 +175,71 @@ auto AShelterCharacter::repair() -> void
     return;
   }
   const auto hitActor = hitResult.GetActor();
-  if (!hitActor->IsA<AShelterShelter>())
+  if (hitActor->IsA<AShelterShelter>())
   {
-    LOG("Facing something else", hitActor->GetName());
+    LOG("Facing shelter building");
+    if (shelterHp > 1.f)
+      return;
+    shelterHp += repairAmount();
+    --scrap;
+    auto hudUi = getHudUi();
+    CHECK_RET(hudUi);
+    hudUi->setShelterHp(shelterHp);
+    hudUi->setScrap(scrap);
     return;
   }
-  LOG("Facing shelter building");
-  const auto repairAmount = .025f;
-  shelterHp += repairAmount;
-  --scrap;
-  auto hudUi = getHudUi();
-  CHECK_RET(hudUi);
-  hudUi->setShelterHp(shelterHp);
-  hudUi->setScrap(scrap);
+  if (auto tower = Cast<AShelterTower>(hitActor))
+  {
+    LOG("Facing tower");
+    if (tower->repair())
+    {
+      --scrap;
+      auto hudUi = getHudUi();
+      CHECK_RET(hudUi);
+      hudUi->setScrap(scrap);
+    }
+    return;
+  }
+  LOG("Facing something else", hitActor->GetName());
+}
+
+auto AShelterCharacter::placeTower() -> void
+{
+  if (scrap <= 0)
+    return;
+
+  const auto start = getLoc(this);
+  const auto end = start + GetControlRotation().Vector() * 10'00.f;
+  FHitResult hitResult;
+  auto isHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+  auto l = [&]() {
+    if (!isHit)
+    {
+      LOG("Not pointing at anything");
+      return vec(end.X, end.Y, 0.);
+    }
+    return vec(hitResult.Location.X, hitResult.Location.Y, 0.);
+  }();
+  FActorSpawnParameters params;
+  params.SpawnCollisionHandlingOverride =
+    ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+  auto tower =
+    GetWorld()->SpawnActor<AShelterTower>(AShelterTower::StaticClass(), l, rot(0., 0., 0.), params);
+  if (tower)
+  {
+    --scrap;
+    auto hudUi = getHudUi();
+    CHECK_RET(hudUi);
+    hudUi->setScrap(scrap);
+  }
+}
+
+auto AShelterCharacter::getShelterHp() const -> float
+{
+  return shelterHp;
+}
+
+auto AShelterCharacter::getScrap() const -> int
+{
+  return scrap;
 }

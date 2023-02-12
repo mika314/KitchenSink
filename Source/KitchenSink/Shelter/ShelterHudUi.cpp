@@ -29,3 +29,11 @@ auto UShelterHudUi::setMedkits(int v) -> void
   CHECK_RET(widget);
   widget->SetText(FText::Format(FTextFormat(LOC("{0}")), v));
 }
+
+auto UShelterHudUi::mobDied() -> void
+{
+  --mobs;
+  auto widget = getProp<UTextBlock>(this, TEXT("AliensTb"));
+  CHECK_RET(widget);
+  widget->SetText(FText::Format(FTextFormat(LOC("{0}")), mobs));
+}

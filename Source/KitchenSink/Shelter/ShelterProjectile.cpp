@@ -26,7 +26,7 @@ AShelterProjectile::AShelterProjectile()
   ProjectileMovement->bRotationFollowsVelocity = true;
   ProjectileMovement->bShouldBounce = true;
 
-  InitialLifeSpan = 3.0f;
+  InitialLifeSpan = 1.5f;
 }
 
 void AShelterProjectile::onHit(UPrimitiveComponent * /*hitComp*/,
@@ -42,7 +42,7 @@ void AShelterProjectile::onHit(UPrimitiveComponent * /*hitComp*/,
 
   if (otherComp && otherComp->IsSimulatingPhysics())
   {
-    otherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+    otherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, getLoc(this));
 
     Destroy();
     return;

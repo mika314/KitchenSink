@@ -16,14 +16,13 @@ UShelterWeaponComponent::UShelterWeaponComponent()
 
 void UShelterWeaponComponent::Fire()
 {
-  LOG("fire");
   CHECK_RET(character && character->GetController());
 
   CHECK_RET(ProjectileClass)
 
   auto playerController = Cast<APlayerController>(character->GetController());
   const auto SpawnRotation = playerController->PlayerCameraManager->GetCameraRotation();
-  const auto SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+  const auto SpawnLocation = getLoc(GetOwner()) + SpawnRotation.RotateVector(MuzzleOffset);
 
   FActorSpawnParameters ActorSpawnParams;
   ActorSpawnParams.SpawnCollisionHandlingOverride =
@@ -34,7 +33,7 @@ void UShelterWeaponComponent::Fire()
   World->SpawnActor<AShelterProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 
   CHECK_RET(FireSound);
-  UGameplayStatics::PlaySoundAtLocation(this, FireSound, character->GetActorLocation());
+  UGameplayStatics::PlaySoundAtLocation(this, FireSound, getLoc(character));
 
   CHECK_RET(FireAnimation);
   auto AnimInstance = character->getMesh1P()->GetAnimInstance();
