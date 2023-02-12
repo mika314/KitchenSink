@@ -73,6 +73,7 @@ private:
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
+  auto gameOver() -> void;
   auto heal() -> void;
   auto look(const FInputActionValue &Value) -> void;
   auto move(const FInputActionValue &Value) -> void;

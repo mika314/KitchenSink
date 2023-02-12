@@ -27,8 +27,10 @@ AShelterMob::AShelterMob()
   mushroomMesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "1-Shelter", "SM_Mushroom"));
   mushroomMesh->AttachToComponent(
     mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LArm"));
+  mushroomMesh->SetCanEverAffectNavigation(false);
 
   AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+  SetCanAffectNavigationGeneration(false);
 }
 
 auto AShelterMob::BeginPlay() -> void
@@ -143,7 +145,13 @@ auto AShelterMob::Tick(float dt) -> void
     }();
     if (target)
     {
-      auto ret = aiController->MoveToActor(target, 100.0f, true, true, true, 0, true);
+      auto ret = aiController->MoveToActor(target,
+                                           100.0f,
+                                           true /*stop on overlap */,
+                                           true /*use pathfinding*/,
+                                           false /*can strafe*/,
+                                           nullptr,
+                                           true /*allow partial path*/);
       switch (ret)
       {
       case EPathFollowingRequestResult::Failed: state = EShelterMobState::processing; break;
@@ -175,7 +183,7 @@ auto AShelterMob::lineTraceToDetermineHit() -> void
   if (distToPlayer < 7'00.f)
   {
     LOG("Hit player by distance");
-    character->applyDamage(0.03f);
+    character->applyDamage(0.1f);
     state = EShelterMobState::attacking;
     return;
   }
@@ -199,7 +207,7 @@ auto AShelterMob::lineTraceToDetermineHit() -> void
   if (hitActor->IsA<AShelterCharacter>())
   {
     LOG("Hit player");
-    character->applyDamage(0.03f);
+    character->applyDamage(0.1f);
     state = EShelterMobState::attacking;
     return;
   }

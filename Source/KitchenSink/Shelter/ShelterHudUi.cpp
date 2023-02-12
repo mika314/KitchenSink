@@ -33,7 +33,18 @@ auto UShelterHudUi::setMedkits(int v) -> void
 auto UShelterHudUi::mobDied() -> void
 {
   --mobs;
+
+  if (mobs == 0)
+  {
+    gameOver();
+    return;
+  }
   auto widget = getProp<UTextBlock>(this, TEXT("AliensTb"));
   CHECK_RET(widget);
   widget->SetText(FText::Format(FTextFormat(LOC("{0}")), mobs));
+}
+
+auto UShelterHudUi::gameOver() -> void
+{
+  UGameplayStatics::OpenLevel(GetWorld(), FName("ShelterGameOver"), true, "1");
 }

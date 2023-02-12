@@ -20,4 +20,6 @@ public:
 
 private:
   int mobs = 250;
+
+  auto gameOver() -> void;
 };

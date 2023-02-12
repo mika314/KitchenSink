@@ -60,8 +60,8 @@ auto AShelterCharacter::BeginPlay() -> void
 
   hp = 1.f;
   shelterHp = 1.f;
-  scrap = 0;
-  medkits = 0;
+  scrap = 2;
+  medkits = 1;
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setHp(getHp());
@@ -108,6 +108,11 @@ auto AShelterCharacter::getHp() const -> float
 auto AShelterCharacter::applyDamage(float v) -> void
 {
   hp -= v;
+  if (hp <= 0)
+  {
+    gameOver();
+    return;
+  }
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setHp(hp);
@@ -124,7 +129,7 @@ auto AShelterCharacter::getHudUi() -> UShelterHudUi *
 
 auto AShelterCharacter::addScrap() -> void
 {
-  scrap += rand() % 10 + 1;
+  scrap += rand() % 2 + 1;
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setScrap(scrap);
@@ -133,6 +138,11 @@ auto AShelterCharacter::addScrap() -> void
 auto AShelterCharacter::applyShelterDamage(float v) -> void
 {
   shelterHp -= v * 0.08f;
+  if (shelterHp <= 0)
+  {
+    gameOver();
+    return;
+  }
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setShelterHp(shelterHp);
@@ -242,4 +252,9 @@ auto AShelterCharacter::getShelterHp() const -> float
 auto AShelterCharacter::getScrap() const -> int
 {
   return scrap;
+}
+
+auto AShelterCharacter::gameOver() -> void
+{
+  UGameplayStatics::OpenLevel(GetWorld(), FName("ShelterGameOver"), true, "0");
 }

@@ -16,6 +16,7 @@ AShelterProjectile::AShelterProjectile()
 
   CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
   CollisionComp->CanCharacterStepUpOn = ECB_No;
+  CollisionComp->SetCanEverAffectNavigation(false);
 
   RootComponent = CollisionComp;
 
@@ -42,8 +43,7 @@ void AShelterProjectile::onHit(UPrimitiveComponent * /*hitComp*/,
 
   if (otherComp && otherComp->IsSimulatingPhysics())
   {
-    otherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, getLoc(this));
-
+    otherComp->AddImpulseAtLocation(GetVelocity() * 5.f, getLoc(this));
     Destroy();
     return;
   }
