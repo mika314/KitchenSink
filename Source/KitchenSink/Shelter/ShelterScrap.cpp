@@ -9,7 +9,7 @@ AShelterScrap::AShelterScrap(): snd(CreateDefaultSubobject<UAudioComponent>("snd
   mesh->SetCollisionProfileName(FName("PhysicsActor"));
   mesh->SetMobility(EComponentMobility::Movable);
   mesh->OnComponentHit.AddDynamic(this, &AShelterScrap::onHit);
-  snd->AttachToComponent(mesh, FAttachmentTransformRules::SnapToTargetIncludingScale);
+  snd->SetupAttachment(mesh);
   snd->SetSound(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Scrap01_Cue"));
 }
 

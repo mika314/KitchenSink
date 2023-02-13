@@ -27,8 +27,7 @@ AShelterMob::AShelterMob()
   mesh->SetAnimInstanceClass(CLASS_FINDER(UAnimInstance, "Quaternius/Bluprints", "BP_MushroomKingAnim"));
 
   mushroomMesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "1-Shelter", "SM_Mushroom"));
-  mushroomMesh->AttachToComponent(
-    mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LArm"));
+  mushroomMesh->SetupAttachment(mesh, FName("LArm"));
   mushroomMesh->SetCanEverAffectNavigation(false);
 
   AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;

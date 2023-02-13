@@ -1,7 +1,7 @@
 #include "ShelterMedkit.h"
 #include "ShelterCharacter.h"
 
-AShelterMedkit::AShelterMedkit() : snd(CreateDefaultSubobject<UAudioComponent>("snd"))
+AShelterMedkit::AShelterMedkit(): snd(CreateDefaultSubobject<UAudioComponent>("snd"))
 {
   auto mesh = GetStaticMeshComponent();
   mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "1-Shelter", "SM_ShelterMedkit"));
@@ -9,7 +9,7 @@ AShelterMedkit::AShelterMedkit() : snd(CreateDefaultSubobject<UAudioComponent>("
   mesh->SetCollisionProfileName(FName("PhysicsActor"));
   mesh->SetMobility(EComponentMobility::Movable);
   mesh->OnComponentHit.AddDynamic(this, &AShelterMedkit::onHit);
-  snd->AttachToComponent(mesh, FAttachmentTransformRules::SnapToTargetIncludingScale);
+  snd->SetupAttachment(mesh);
   snd->SetSound(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Medkit_Cue"));
 }
 
