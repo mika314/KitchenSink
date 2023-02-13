@@ -16,8 +16,11 @@
 AShelterCharacter::AShelterCharacter()
   : Mesh1P(CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"))),
     FirstPersonCameraComponent(CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"))),
-    shelterWeapon(CreateDefaultSubobject<UShelterWeaponComponent>(TEXT("shelterWeapon")))
-
+    shelterWeapon(CreateDefaultSubobject<UShelterWeaponComponent>(TEXT("shelterWeapon"))),
+    medkitSnd(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Medkit_Cue")),
+    scrapSnd(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Scrap01_Cue")),
+    towerSnd(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Tower_Cue")),
+    healingSnd(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_Healing_Cue"))
 {
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -133,6 +136,7 @@ auto AShelterCharacter::addScrap() -> void
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setScrap(scrap);
+  UGameplayStatics::PlaySoundAtLocation(GetWorld(), scrapSnd, getLoc(this));
 }
 
 auto AShelterCharacter::applyShelterDamage(float v) -> void
@@ -154,6 +158,7 @@ auto AShelterCharacter::addMedkit() -> void
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->setMedkits(medkits);
+  UGameplayStatics::PlaySoundAtLocation(GetWorld(), medkitSnd, getLoc(this));
 }
 
 auto AShelterCharacter::heal() -> void
@@ -169,6 +174,7 @@ auto AShelterCharacter::heal() -> void
   CHECK_RET(hudUi);
   hudUi->setHp(hp);
   hudUi->setMedkits(medkits);
+  UGameplayStatics::PlaySoundAtLocation(GetWorld(), healingSnd, getLoc(this));
 }
 
 auto AShelterCharacter::repair() -> void
@@ -196,6 +202,7 @@ auto AShelterCharacter::repair() -> void
     CHECK_RET(hudUi);
     hudUi->setShelterHp(shelterHp);
     hudUi->setScrap(scrap);
+    UGameplayStatics::PlaySoundAtLocation(GetWorld(), towerSnd, getLoc(this));
     return;
   }
   if (auto tower = Cast<AShelterTower>(hitActor))
@@ -207,6 +214,7 @@ auto AShelterCharacter::repair() -> void
       auto hudUi = getHudUi();
       CHECK_RET(hudUi);
       hudUi->setScrap(scrap);
+      UGameplayStatics::PlaySoundAtLocation(GetWorld(), towerSnd, getLoc(this));
     }
     return;
   }
@@ -241,6 +249,7 @@ auto AShelterCharacter::placeTower() -> void
     auto hudUi = getHudUi();
     CHECK_RET(hudUi);
     hudUi->setScrap(scrap);
+    UGameplayStatics::PlaySoundAtLocation(GetWorld(), towerSnd, getLoc(this));
   }
 }
 

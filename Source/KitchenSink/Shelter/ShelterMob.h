@@ -41,4 +41,6 @@ private:
   class UAnimMontage *attackMontage;
   class UAnimMontage *deathMontage;
   class UStaticMeshComponent *mushroomMesh;
+  class USoundBase *sndAttack;
+  class USoundBase *sndDeath;
 };

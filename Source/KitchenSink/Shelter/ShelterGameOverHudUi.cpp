@@ -10,7 +10,7 @@ auto UShelterGameOverHudUi::OnWidgetRebuilt() -> void
     auto widget = getProp<UTextBlock>(this, TEXT("GameOverTb"));
     if (gameMode->OptionsString == TEXT("?0"))
       widget->SetText(LOC("You lose.\nTry again."));
-    else
+    else // if (gameMode->OptionsString == TEXT("?1"))
       widget->SetText(LOC("Victory!"));
   }
   {

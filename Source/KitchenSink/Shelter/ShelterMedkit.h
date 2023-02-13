@@ -18,4 +18,6 @@ private:
              UPrimitiveComponent *otherComp,
              FVector normalImpulse,
              const FHitResult &hit);
+
+  UAudioComponent *snd;
 };

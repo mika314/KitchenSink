@@ -39,18 +39,24 @@ AKitchenSinkCharacter::AKitchenSinkCharacter()
 
 void AKitchenSinkCharacter::BeginPlay()
 {
-	// Call the base class  
-	Super::BeginPlay();
+  // Call the base class
+  Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+  // Add Input Mapping Context
+  if (APlayerController *PlayerController = Cast<APlayerController>(Controller))
+  {
+    if (UEnhancedInputLocalPlayerSubsystem *Subsystem =
+          ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+            PlayerController->GetLocalPlayer()))
+    {
+      Subsystem->AddMappingContext(DefaultMappingContext, 0);
+    }
+  }
 
+  auto playerController = Cast<APlayerController>(GetController());
+  CHECK_RET(playerController);
+  playerController->SetInputMode(FInputModeGameOnly{});
+  playerController->bShowMouseCursor = false;
 }
 
 //////////////////////////////////////////////////////////////////////////// Input

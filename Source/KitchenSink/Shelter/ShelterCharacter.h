@@ -70,6 +70,10 @@ private:
   float shelterHp;
   int scrap;
   int medkits;
+  USoundBase *medkitSnd;
+  USoundBase *scrapSnd;
+  USoundBase *towerSnd;
+  USoundBase *healingSnd;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;

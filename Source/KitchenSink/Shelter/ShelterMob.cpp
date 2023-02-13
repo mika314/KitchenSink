@@ -14,7 +14,9 @@
 AShelterMob::AShelterMob()
   : attackMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Punch_Montage")),
     deathMontage(OBJ_FINDER(AnimMontage, "Quaternius/Animations", "Death_Montage")),
-    mushroomMesh(CreateDefaultSubobject<UStaticMeshComponent>("mushrumMesh"))
+    mushroomMesh(CreateDefaultSubobject<UStaticMeshComponent>("mushrumMesh")),
+    sndAttack(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_MobAttack_Cue")),
+    sndDeath(OBJ_FINDER(SoundCue, "1-Shelter/Snd", "SND_MobDeath_Cue"))
 {
   auto mesh = GetMesh();
   mesh->SetSkeletalMesh(OBJ_FINDER(SkeletalMesh, "Quaternius/Mesh", "SK_MushroomKing"));
@@ -94,6 +96,7 @@ auto AShelterMob::Tick(float dt) -> void
     auto animInst = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
     CHECK_RET(animInst);
     animInst->Montage_Play(attackMontage, 1.0f);
+    UGameplayStatics::PlaySoundAtLocation(this, sndAttack, getLoc(this));
     state = EShelterMobState::busy;
     break;
   }
@@ -278,6 +281,7 @@ auto AShelterMob::die() -> void
   state = EShelterMobState::dead;
   SetLifeSpan(5.f);
   SetActorEnableCollision(false);
+  UGameplayStatics::PlaySoundAtLocation(this, sndDeath, getLoc(this));
 }
 
 auto AShelterMob::EndPlay(const EEndPlayReason::Type reason) -> void
