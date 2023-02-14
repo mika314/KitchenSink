@@ -7,12 +7,28 @@ auto UShelterGameOverHudUi::OnWidgetRebuilt() -> void
   if (auto gameMode = UGameplayStatics::GetGameMode(this))
   {
     LOG(gameMode->OptionsString);
-    auto widget = getProp<UTextBlock>(this, TEXT("GameOverTb"));
     if (gameMode->OptionsString == TEXT("?0"))
+    {
+      auto widget = getProp<UTextBlock>(this, TEXT("GameOverTb"));
+      CHECK_RET(widget);
       widget->SetText(LOC("You lose.\nTry again."));
-    else // if (gameMode->OptionsString == TEXT("?1"))
-      widget->SetText(LOC("Victory!"));
+    }
+    else
+    {
+      {
+        auto widget = getProp<UTextBlock>(this, TEXT("GameOverTb"));
+        CHECK_RET(widget);
+        widget->SetText(LOC("Victory!"));
+      }
+      {
+        auto widget = getProp<UTextBlock>(this, TEXT("TimeTb"));
+        CHECK_RET(widget);
+        const auto time = FCString::Atoi(*gameMode->OptionsString.RightChop(1)) / 10.f;
+        widget->SetText(FText::Format(LOC("{0:%.1f} s"), time));
+      }
+    }
   }
+
   {
     auto widget = getProp<UButton>(this, TEXT("LobbyBtn"));
     CHECK_RET(widget);

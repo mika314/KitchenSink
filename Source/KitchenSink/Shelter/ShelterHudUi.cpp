@@ -46,5 +46,8 @@ auto UShelterHudUi::mobDied() -> void
 
 auto UShelterHudUi::gameOver() -> void
 {
-  UGameplayStatics::OpenLevel(GetWorld(), FName("ShelterGameOver"), true, "1");
+  UGameplayStatics::OpenLevel(GetWorld(),
+                              FName("ShelterGameOver"),
+                              true,
+                              FString::FromInt(static_cast<int>(GetWorld()->GetTimeSeconds() * 10)));
 }
