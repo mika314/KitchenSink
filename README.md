@@ -46,6 +46,10 @@ for more details.
 
 ## Games
 
+### Floating Islands
+
+Coming soon...
+
 ### Shelter
 
 FPS tower defense game. The Earth is experiencing an alien
