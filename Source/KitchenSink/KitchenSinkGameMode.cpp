@@ -2,13 +2,11 @@
 
 #include "KitchenSinkGameMode.h"
 #include "KitchenSinkCharacter.h"
-#include "UObject/ConstructorHelpers.h"
+#include "PrjHud.h"
+#include <QofL/class_finder.h>
 
 AKitchenSinkGameMode::AKitchenSinkGameMode()
-	: Super()
 {
-	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
-	DefaultPawnClass = PlayerPawnClassFinder.Class;
-
+  DefaultPawnClass = CLASS_FINDER(APawn, "FirstPerson/Blueprints", "BP_FirstPersonCharacter");
+  HUDClass = APrjHud::StaticClass();
 }

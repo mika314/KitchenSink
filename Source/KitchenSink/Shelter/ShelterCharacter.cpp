@@ -34,7 +34,6 @@ AShelterCharacter::AShelterCharacter()
   Mesh1P->CastShadow = false;
   Mesh1P->SetRelativeLocation(vec(-30.f, 0.f, -150.f));
 
-  FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
   shelterWeapon->SetupAttachment(Mesh1P, FName(TEXT("GripPoint")));
   shelterWeapon->character = this;
 }

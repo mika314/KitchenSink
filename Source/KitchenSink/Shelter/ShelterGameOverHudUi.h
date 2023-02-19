@@ -11,10 +11,9 @@ UCLASS()
 class KITCHENSINK_API UShelterGameOverHudUi : public UUserWidget
 {
   GENERATED_BODY()
-public:
-  auto OnWidgetRebuilt() -> void final;
 
 private:
+  auto OnWidgetRebuilt() -> void final;
   UFUNCTION()
   void onTryAgainClicked();
   UFUNCTION()

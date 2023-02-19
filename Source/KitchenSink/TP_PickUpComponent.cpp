@@ -17,12 +17,12 @@ void UTP_PickUpComponent::BeginPlay()
   OnComponentBeginOverlap.AddDynamic(this, &UTP_PickUpComponent::OnSphereBeginOverlap);
 }
 
-void UTP_PickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent *OverlappedComponent,
+void UTP_PickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent * /*OverlappedComponent*/,
                                                AActor *OtherActor,
-                                               UPrimitiveComponent *OtherComp,
-                                               int32 OtherBodyIndex,
-                                               bool bFromSweep,
-                                               const FHitResult &SweepResult)
+                                               UPrimitiveComponent * /*OtherComp*/,
+                                               int32 /*OtherBodyIndex*/,
+                                               bool /*bFromSweep*/,
+                                               const FHitResult & /*SweepResult*/)
 {
   // Checking if it is a First Person Character overlapping
   if (auto Character = Cast<AKitchenSinkCharacter>(OtherActor))
