@@ -6,159 +6,160 @@
 
 auto USettingsUi::OnWidgetRebuilt() -> void
 {
+  Super::OnWidgetRebuilt();
   auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
   if (!settings)
     settings = NewObject<USettings>(this, USettings::StaticClass());
 
-  const auto videoQuality = static_cast<VideoQuality>(settings->videoQuality);
+  const auto graphicsQuality = static_cast<GraphicsQuality>(settings->graphicsQuality);
 
-  setVideoQuality(videoQuality, false);
+  setGraphicsQuality(graphicsQuality, false);
 
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityLow"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
-    widget->SetCheckedState(videoQuality == VideoQuality::low ? ECheckBoxState::Checked
+    widget->SetCheckedState(graphicsQuality == GraphicsQuality::low ? ECheckBoxState::Checked
                                                               : ECheckBoxState::Unchecked);
-    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onVideoQualityLowChanged);
+    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityLowChanged);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityMed"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
-    widget->SetCheckedState(videoQuality == VideoQuality::med ? ECheckBoxState::Checked
+    widget->SetCheckedState(graphicsQuality == GraphicsQuality::med ? ECheckBoxState::Checked
                                                               : ECheckBoxState::Unchecked);
-    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onVideoQualityMedChanged);
+    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityMedChanged);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityHigh"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
-    widget->SetCheckedState(videoQuality == VideoQuality::high ? ECheckBoxState::Checked
+    widget->SetCheckedState(graphicsQuality == GraphicsQuality::high ? ECheckBoxState::Checked
                                                                : ECheckBoxState::Unchecked);
-    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onVideoQualityHighChanged);
+    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityHighChanged);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityEpic"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
-    widget->SetCheckedState(videoQuality == VideoQuality::epic ? ECheckBoxState::Checked
+    widget->SetCheckedState(graphicsQuality == GraphicsQuality::epic ? ECheckBoxState::Checked
                                                                : ECheckBoxState::Unchecked);
-    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onVideoQualityEpicChanged);
+    widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityEpicChanged);
   }
 }
 
-auto USettingsUi::onVideoQualityLowChanged(bool) -> void
+auto USettingsUi::onGraphicsQualityLowChanged(bool) -> void
 {
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityLow"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Checked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityMed"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityHigh"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityEpic"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setVideoQuality(VideoQuality::low);
+  setGraphicsQuality(GraphicsQuality::low);
 }
 
-auto USettingsUi::onVideoQualityMedChanged(bool) -> void
+auto USettingsUi::onGraphicsQualityMedChanged(bool) -> void
 {
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityLow"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityMed"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Checked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityHigh"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityEpic"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setVideoQuality(VideoQuality::med);
+  setGraphicsQuality(GraphicsQuality::med);
 }
 
-auto USettingsUi::onVideoQualityHighChanged(bool) -> void
+auto USettingsUi::onGraphicsQualityHighChanged(bool) -> void
 {
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityLow"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityMed"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityHigh"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Checked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityEpic"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setVideoQuality(VideoQuality::high);
+  setGraphicsQuality(GraphicsQuality::high);
 }
 
-auto USettingsUi::onVideoQualityEpicChanged(bool) -> void
+auto USettingsUi::onGraphicsQualityEpicChanged(bool) -> void
 {
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityLow"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityMed"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityHigh"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
   {
-    auto widget = getProp<UCheckBox>(this, TEXT("VideoQualityEpic"));
+    auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Checked);
   }
-  setVideoQuality(VideoQuality::epic);
+  setGraphicsQuality(GraphicsQuality::epic);
 }
 
-auto USettingsUi::setVideoQuality(VideoQuality v, bool save) -> void
+auto USettingsUi::setGraphicsQuality(GraphicsQuality v, bool save) -> void
 {
   if (save)
   {
     auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
     if (!settings)
       settings = NewObject<USettings>(this, USettings::StaticClass());
-    settings->videoQuality = static_cast<int>(v);
+    settings->graphicsQuality = static_cast<int>(v);
     UGameplayStatics::SaveGameToSlot(settings, "settings", 0);
   }
 
   auto controller = UGameplayStatics::GetPlayerController(this, 0);
   switch (v)
   {
-  case VideoQuality::epic:
+  case GraphicsQuality::epic:
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ViewDistanceQuality@3"), TEXT("Scalability"), ECVF_SetByScalability, false);
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
@@ -182,7 +183,7 @@ auto USettingsUi::setVideoQuality(VideoQuality v, bool save) -> void
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ShadingQuality@3"), TEXT("Scalability"), ECVF_SetByScalability, false);
     break;
-  case VideoQuality::high:
+  case GraphicsQuality::high:
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ViewDistanceQuality@2"), TEXT("Scalability"), ECVF_SetByScalability, false);
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
@@ -204,7 +205,7 @@ auto USettingsUi::setVideoQuality(VideoQuality v, bool save) -> void
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ShadingQuality@2"), TEXT("Scalability"), ECVF_SetByScalability, false);
     break;
-  case VideoQuality::med:
+  case GraphicsQuality::med:
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ViewDistanceQuality@1"), TEXT("Scalability"), ECVF_SetByScalability, false);
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
@@ -226,7 +227,7 @@ auto USettingsUi::setVideoQuality(VideoQuality v, bool save) -> void
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ShadingQuality@1"), TEXT("Scalability"), ECVF_SetByScalability, false);
     break;
-  case VideoQuality::low:
+  case GraphicsQuality::low:
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ViewDistanceQuality@0"), TEXT("Scalability"), ECVF_SetByScalability, false);
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(

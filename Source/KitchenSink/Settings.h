@@ -13,7 +13,7 @@ class KITCHENSINK_API USettings : public USaveGame
   GENERATED_BODY()
 public:
   UPROPERTY()
-  int videoQuality = 3;
+  int graphicsQuality = 3;
 
   UPROPERTY()
   float mouseSensitivity = 0.5f;

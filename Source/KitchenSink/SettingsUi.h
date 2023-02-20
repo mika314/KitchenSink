@@ -7,7 +7,7 @@
 
 #include "SettingsUi.generated.h"
 
-enum class VideoQuality { low, med, high, epic };
+enum class GraphicsQuality { low, med, high, epic };
 
 UCLASS()
 class KITCHENSINK_API USettingsUi : public UUserWidget
@@ -17,13 +17,13 @@ private:
   auto OnWidgetRebuilt() -> void final;
 
   UFUNCTION()
-  void onVideoQualityLowChanged(bool isChecked);
+  void onGraphicsQualityLowChanged(bool isChecked);
   UFUNCTION()
-  void onVideoQualityMedChanged(bool isChecked);
+  void onGraphicsQualityMedChanged(bool isChecked);
   UFUNCTION()
-  void onVideoQualityHighChanged(bool isChecked);
+  void onGraphicsQualityHighChanged(bool isChecked);
   UFUNCTION()
-  void onVideoQualityEpicChanged(bool isChecked);
+  void onGraphicsQualityEpicChanged(bool isChecked);
 
-  auto setVideoQuality(VideoQuality, bool save = true) -> void;
+  auto setGraphicsQuality(GraphicsQuality, bool save = true) -> void;
 };
