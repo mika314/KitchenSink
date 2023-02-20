@@ -1,6 +1,7 @@
 // (c) 2013 Mika Pi
 
 #include "ShelterCharacter.h"
+#include "../Settings.h"
 #include "RepairAmount.h"
 #include "ShelterHud.h"
 #include "ShelterHudUi.h"
@@ -84,6 +85,7 @@ auto AShelterCharacter::SetupPlayerInputComponent(class UInputComponent *playerI
   inputComp->BindAction(RepairAction, ETriggerEvent::Triggered, this, &AShelterCharacter::repair);
   inputComp->BindAction(
     PlaceTowerAction, ETriggerEvent::Triggered, this, &AShelterCharacter::placeTower);
+  updateMouseSensitivity();
 }
 
 auto AShelterCharacter::move(const FInputActionValue &v) -> void
@@ -98,8 +100,8 @@ auto AShelterCharacter::look(const FInputActionValue &v) -> void
 {
   const auto lookAxisVec = v.Get<FVector2D>();
   CHECK_RET(Controller);
-  AddControllerYawInput(lookAxisVec.X);
-  AddControllerPitchInput(lookAxisVec.Y);
+  AddControllerYawInput(lookAxisVec.X * mouseSensitivity);
+  AddControllerPitchInput(lookAxisVec.Y * mouseSensitivity);
 }
 
 auto AShelterCharacter::getHp() const -> float
@@ -265,4 +267,13 @@ auto AShelterCharacter::getScrap() const -> int
 auto AShelterCharacter::gameOver() -> void
 {
   UGameplayStatics::OpenLevel(GetWorld(), FName("ShelterGameOver"), true, "0");
+}
+
+auto AShelterCharacter::updateMouseSensitivity() -> void
+{
+  auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
+  if (!settings)
+    settings = NewObject<USettings>(this, USettings::StaticClass());
+
+  mouseSensitivity = settings->mouseSensitivity;
 }

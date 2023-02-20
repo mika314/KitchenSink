@@ -74,6 +74,7 @@ private:
   USoundBase *scrapSnd;
   USoundBase *towerSnd;
   USoundBase *healingSnd;
+  float mouseSensitivity = 1.f;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
@@ -83,4 +84,5 @@ private:
   auto move(const FInputActionValue &Value) -> void;
   auto placeTower() -> void;
   auto repair() -> void;
+  auto updateMouseSensitivity() -> void;
 };

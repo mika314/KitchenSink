@@ -116,7 +116,6 @@ auto AKitchenSinkCharacter::GetHasRifle() -> bool
 
 auto AKitchenSinkCharacter::updateMouseSensitivity() -> void
 {
-  CHECK_RET(LookAction);
   auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
   if (!settings)
     settings = NewObject<USettings>(this, USettings::StaticClass());
