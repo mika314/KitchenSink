@@ -24,6 +24,8 @@ private:
   void onGraphicsQualityHighChanged(bool isChecked);
   UFUNCTION()
   void onGraphicsQualityEpicChanged(bool isChecked);
+  UFUNCTION()
+  void onMouseSensitivityChanged(float v);
 
   auto setGraphicsQuality(GraphicsQuality, bool save = true) -> void;
 };

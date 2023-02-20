@@ -2,6 +2,7 @@
 
 #include "SettingsUi.h"
 #include "Settings.h"
+#include <Components/Slider.h>
 #include <Misc/ConfigUtilities.h>
 
 auto USettingsUi::OnWidgetRebuilt() -> void
@@ -19,29 +20,40 @@ auto USettingsUi::OnWidgetRebuilt() -> void
     auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
     CHECK_RET(widget);
     widget->SetCheckedState(graphicsQuality == GraphicsQuality::low ? ECheckBoxState::Checked
-                                                              : ECheckBoxState::Unchecked);
+                                                                    : ECheckBoxState::Unchecked);
     widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityLowChanged);
   }
   {
     auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityMed"));
     CHECK_RET(widget);
     widget->SetCheckedState(graphicsQuality == GraphicsQuality::med ? ECheckBoxState::Checked
-                                                              : ECheckBoxState::Unchecked);
+                                                                    : ECheckBoxState::Unchecked);
     widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityMedChanged);
   }
   {
     auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityHigh"));
     CHECK_RET(widget);
     widget->SetCheckedState(graphicsQuality == GraphicsQuality::high ? ECheckBoxState::Checked
-                                                               : ECheckBoxState::Unchecked);
+                                                                     : ECheckBoxState::Unchecked);
     widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityHighChanged);
   }
   {
     auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityEpic"));
     CHECK_RET(widget);
     widget->SetCheckedState(graphicsQuality == GraphicsQuality::epic ? ECheckBoxState::Checked
-                                                               : ECheckBoxState::Unchecked);
+                                                                     : ECheckBoxState::Unchecked);
     widget->OnCheckStateChanged.AddDynamic(this, &USettingsUi::onGraphicsQualityEpicChanged);
+  }
+  {
+    auto widget = getProp<USlider>(this, TEXT("MouseSensitivitySlider"));
+    CHECK_RET(widget);
+    widget->OnValueChanged.AddDynamic(this, &USettingsUi::onMouseSensitivityChanged);
+    widget->SetValue(settings->mouseSensitivity);
+  }
+  {
+    auto widget = getProp<UTextBlock>(this, TEXT("MouseSensitivityTb"));
+    CHECK_RET(widget);
+    widget->SetText(FText::Format(LOC("{0}"), settings->mouseSensitivity));
   }
 }
 
@@ -249,5 +261,19 @@ auto USettingsUi::setGraphicsQuality(GraphicsQuality v, bool save) -> void
     UE::ConfigUtilities::ApplyCVarSettingsFromIni(
       TEXT("ShadingQuality@0"), TEXT("Scalability"), ECVF_SetByScalability, false);
     break;
+  }
+}
+
+auto USettingsUi::onMouseSensitivityChanged(float v) -> void
+{
+  auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
+  if (!settings)
+    settings = NewObject<USettings>(this, USettings::StaticClass());
+  settings->mouseSensitivity = v;
+  UGameplayStatics::SaveGameToSlot(settings, "settings", 0);
+  {
+    auto widget = getProp<UTextBlock>(this, TEXT("MouseSensitivityTb"));
+    CHECK_RET(widget);
+    widget->SetText(FText::Format(LOC("{0}"), settings->mouseSensitivity));
   }
 }

@@ -1,6 +1,7 @@
 // (c) 2023 Mika Pi
 
 #include "HudUi.h"
+#include "KitchenSinkCharacter.h"
 #include "SettingsUi.h"
 
 auto UHudUi::toggleSettings() -> void
@@ -25,5 +26,8 @@ auto UHudUi::toggleSettings() -> void
     auto playerController = GetWorld()->GetFirstPlayerController();
     playerController->SetInputMode(FInputModeGameOnly{});
     playerController->bShowMouseCursor = false;
+    auto character = Cast<AKitchenSinkCharacter>(playerController->GetPawnOrSpectator());
+    CHECK_RET(character);
+    character->updateMouseSensitivity();
   }
 }

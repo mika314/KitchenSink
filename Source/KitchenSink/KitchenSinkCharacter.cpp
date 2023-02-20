@@ -4,21 +4,16 @@
 #include "HudUi.h"
 #include "KitchenSinkProjectile.h"
 #include "PrjHud.h"
+#include "Settings.h"
 #include <Animation/AnimInstance.h>
 #include <Camera/CameraComponent.h>
 #include <Components/CapsuleComponent.h>
 #include <EnhancedInputComponent.h>
 #include <EnhancedInputSubsystems.h>
 
-//////////////////////////////////////////////////////////////////////////
-// AKitchenSinkCharacter
-
 AKitchenSinkCharacter::AKitchenSinkCharacter()
 {
-  // Character doesnt have a rifle at start
   bHasRifle = false;
-
-  // Set size for collision capsule
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
   // Create a CameraComponent
@@ -34,13 +29,11 @@ AKitchenSinkCharacter::AKitchenSinkCharacter()
   Mesh1P->SetupAttachment(FirstPersonCameraComponent);
   Mesh1P->bCastDynamicShadow = false;
   Mesh1P->CastShadow = false;
-  // Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
   Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 }
 
-void AKitchenSinkCharacter::BeginPlay()
+auto AKitchenSinkCharacter::BeginPlay() -> void
 {
-  // Call the base class
   Super::BeginPlay();
 
   // Add Input Mapping Context
@@ -60,30 +53,18 @@ void AKitchenSinkCharacter::BeginPlay()
   playerController->bShowMouseCursor = false;
 }
 
-//////////////////////////////////////////////////////////////////////////// Input
-
-void AKitchenSinkCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
+auto AKitchenSinkCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
+  -> void
 {
-  // Set up action bindings
-  if (UEnhancedInputComponent *EnhancedInputComponent =
-        CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-  {
-    // Jumping
-    EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-    EnhancedInputComponent->BindAction(
-      JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-    // Moving
-    EnhancedInputComponent->BindAction(
-      MoveAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::move);
-
-    // Looking
-    EnhancedInputComponent->BindAction(
-      LookAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::look);
-
-    EnhancedInputComponent->BindAction(
-      SettingsAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::settings);
-  }
+  auto inputComp = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+  CHECK_RET(inputComp);
+  inputComp->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+  inputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+  inputComp->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::move);
+  inputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::look);
+  inputComp->BindAction(
+    SettingsAction, ETriggerEvent::Triggered, this, &AKitchenSinkCharacter::settings);
+  updateMouseSensitivity();
 }
 
 auto AKitchenSinkCharacter::move(const FInputActionValue &Value) -> void
@@ -107,8 +88,8 @@ auto AKitchenSinkCharacter::look(const FInputActionValue &Value) -> void
   if (Controller != nullptr)
   {
     // add yaw and pitch input to controller
-    AddControllerYawInput(LookAxisVector.X);
-    AddControllerPitchInput(LookAxisVector.Y);
+    AddControllerYawInput(LookAxisVector.X * mouseSensitivity);
+    AddControllerPitchInput(LookAxisVector.Y * mouseSensitivity);
   }
 }
 
@@ -123,12 +104,22 @@ auto AKitchenSinkCharacter::settings() -> void
   hudUi->toggleSettings();
 }
 
-void AKitchenSinkCharacter::SetHasRifle(bool bNewHasRifle)
+auto AKitchenSinkCharacter::SetHasRifle(bool bNewHasRifle) -> void
 {
   bHasRifle = bNewHasRifle;
 }
 
-bool AKitchenSinkCharacter::GetHasRifle()
+auto AKitchenSinkCharacter::GetHasRifle() -> bool
 {
   return bHasRifle;
+}
+
+auto AKitchenSinkCharacter::updateMouseSensitivity() -> void
+{
+  CHECK_RET(LookAction);
+  auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
+  if (!settings)
+    settings = NewObject<USettings>(this, USettings::StaticClass());
+
+  mouseSensitivity = settings->mouseSensitivity;
 }
