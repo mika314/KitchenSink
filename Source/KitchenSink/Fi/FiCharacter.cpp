@@ -2,8 +2,10 @@
 
 #include "FiCharacter.h"
 #include "../Settings.h"
+#include "FiCustomer.h"
 #include "FiHud.h"
 #include "FiHudUi.h"
+#include "FiRestaurant.h"
 #include <Animation/AnimInstance.h>
 #include <Camera/CameraComponent.h>
 #include <Components/CapsuleComponent.h>
@@ -50,6 +52,7 @@ auto AFiCharacter::SetupPlayerInputComponent(class UInputComponent *playerInputC
   inputComp->BindAction(JumpAction, ETriggerEvent::Completed, this, &AFiCharacter::stopJump);
   inputComp->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFiCharacter::move);
   inputComp->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFiCharacter::look);
+  inputComp->BindAction(MainAction, ETriggerEvent::Triggered, this, &AFiCharacter::main);
   updateMouseSensitivity();
 }
 
@@ -107,4 +110,58 @@ auto AFiCharacter::jump() -> void
 auto AFiCharacter::stopJump() -> void
 {
   isJumping = false;
+}
+
+auto AFiCharacter::main() -> void
+{
+  const auto start = getLoc(this);
+  const auto end = start + GetControlRotation().Vector() * 5'00.f;
+  FHitResult hitResult;
+  auto isHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+  if (!isHit)
+  {
+    LOG("Not facing anything");
+    return;
+  }
+  const auto hitActor = hitResult.GetActor();
+  if (auto r = Cast<AFiRestaurant>(hitActor))
+  {
+    LOG("Facing restaurant building");
+
+    if (restaurant)
+    {
+      LOG("We need first to deliver food");
+      return;
+    }
+
+    const auto world = GetWorld();
+
+    TArray<AActor *> customers;
+    UGameplayStatics::GetAllActorsOfClass(world, AFiCustomer::StaticClass(), customers);
+
+    CHECK_RET(customers.Num() != 0);
+
+    r->customer = Cast<AFiCustomer>(customers[FMath::RandRange(0, customers.Num() - 1)]);
+    restaurant = r;
+
+    return;
+  }
+  if (auto c = Cast<AFiCustomer>(hitActor))
+  {
+    LOG("Facing customer");
+    if (!restaurant)
+    {
+      LOG("We are not delivering");
+      return;
+    }
+    if (restaurant->customer != c)
+    {
+      LOG("Wrong customer");
+      return;
+    }
+    restaurant->reset();
+    restaurant = nullptr;
+    return;
+  }
+  LOG("Facing something else", hitActor->GetName());
 }

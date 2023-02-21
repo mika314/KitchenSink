@@ -14,6 +14,12 @@ class KITCHENSINK_API AFiRestaurant final : public AStaticMeshActor
 public:
   AFiRestaurant();
   auto hasOrder() const -> bool;
+  auto reset() -> void;
+
+  class AFiCustomer *customer = nullptr;
+
+  UPROPERTY(EditAnywhere, BlueprintReadOnly)
+  bool instantOrder = false;
 
 private:
   auto BeginPlay() -> void final;

@@ -11,4 +11,6 @@ UCLASS()
 class KITCHENSINK_API AFiCustomer : public AStaticMeshActor
 {
   GENERATED_BODY()
+public:
+  AFiCustomer();
 };

@@ -25,6 +25,8 @@ public:
   auto getHudUi() -> class UFiHudUi *;
   auto getMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
 
+  class AFiRestaurant *restaurant = nullptr;
+
 private:
   UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
   USkeletalMeshComponent *Mesh1P;
@@ -44,15 +46,20 @@ private:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
   class UInputAction *LookAction;
 
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+  class UInputAction *MainAction;
+
+
   float mouseSensitivity = 1.f;
   bool isJumping = false;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
   auto gameOver() -> void;
-  auto look(const FInputActionValue &Value) -> void;
-  auto move(const FInputActionValue &Value) -> void;
-  auto updateMouseSensitivity() -> void;
   auto jump() -> void;
+  auto look(const FInputActionValue &Value) -> void;
+  auto main() -> void;
+  auto move(const FInputActionValue &Value) -> void;
   auto stopJump() -> void;
+  auto updateMouseSensitivity() -> void;
 };
