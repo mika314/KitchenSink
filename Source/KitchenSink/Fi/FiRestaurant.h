@@ -13,6 +13,7 @@ class KITCHENSINK_API AFiRestaurant final : public AStaticMeshActor
   GENERATED_BODY()
 public:
   AFiRestaurant();
+  auto forceOrder() -> void;
   auto hasOrder() const -> bool;
   auto reset() -> void;
 

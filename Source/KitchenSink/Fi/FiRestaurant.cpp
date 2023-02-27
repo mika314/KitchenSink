@@ -42,7 +42,7 @@ auto AFiRestaurant::Tick(float dt) -> void
     if (GetWorld()->GetTimeSeconds() > nextRandCheck)
     {
       nextRandCheck += 1.f;
-      if (!character->restaurant && (rand() % 200 == 0 || instantOrder))
+      if (!character->getRestaurant() && (rand() % 200 == 0 || instantOrder))
       {
         instantOrder = false;
         orderTime = GetWorld()->GetTimeSeconds();
@@ -52,7 +52,7 @@ auto AFiRestaurant::Tick(float dt) -> void
     return;
   }
 
-  if (!character->restaurant)
+  if (!character->getRestaurant())
   {
     text->SetVisibleFlag(true);
 
@@ -72,7 +72,7 @@ auto AFiRestaurant::Tick(float dt) -> void
     return;
   }
 
-  if (character->restaurant == this)
+  if (character->getRestaurant() == this)
   {
     FNumberFormattingOptions opt;
     opt.SetMaximumFractionalDigits(1);
@@ -97,4 +97,11 @@ auto AFiRestaurant::reset() -> void
 {
   orderTime = -1.f;
   customer = nullptr;
+}
+
+auto AFiRestaurant::forceOrder() -> void
+{
+  instantOrder = true;
+  orderTime = -1.f;
+  nextRandCheck = 0;
 }

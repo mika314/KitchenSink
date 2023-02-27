@@ -42,6 +42,10 @@ auto AFiCharacter::BeginPlay() -> void
   CHECK_RET(inputSubsys);
 
   inputSubsys->AddMappingContext(DefaultMappingContext, 0);
+
+  auto hudUi = getHudUi();
+  CHECK_RET(hudUi);
+  hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
 }
 
 auto AFiCharacter::SetupPlayerInputComponent(class UInputComponent *playerInputComp) -> void
@@ -143,6 +147,9 @@ auto AFiCharacter::main() -> void
 
     r->customer = Cast<AFiCustomer>(customers[FMath::RandRange(0, customers.Num() - 1)]);
     restaurant = r;
+    auto hudUi = getHudUi();
+    CHECK_RET(hudUi);
+    hudUi->updateObjective(LOC("Delivery food to the customer"));
 
     return;
   }
@@ -161,7 +168,85 @@ auto AFiCharacter::main() -> void
     }
     restaurant->reset();
     restaurant = nullptr;
+    auto hudUi = getHudUi();
+    CHECK_RET(hudUi);
+    hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
+
+    TArray<AActor *> restaurants;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFiRestaurant::StaticClass(), restaurants);
+    CHECK_RET(restaurants.Num() != 0);
+    const auto hasOrder = [&]() {
+      for (const auto a : restaurants)
+      {
+        const auto r = Cast<AFiRestaurant>(a);
+        if (!r)
+          continue;
+        if (r->hasOrder())
+          return true;
+      }
+      return false;
+    }();
+    if (!hasOrder)
+    {
+      LOG("No restaurants having an order, forcing it");
+      const auto r = Cast<AFiRestaurant>(restaurants[rand() % restaurants.Num()]);
+      CHECK_RET(r);
+      r->forceOrder();
+    }
+
     return;
   }
   LOG("Facing something else", hitActor->GetName());
+}
+
+auto AFiCharacter::Tick(float dt) -> void
+{
+  Super::Tick(dt);
+
+  updateHelp();
+}
+
+auto AFiCharacter::updateHelp() -> void
+{
+  auto hudUi = getHudUi();
+  if (!hudUi)
+    return;
+
+  const auto start = getLoc(this);
+  const auto end = start + GetControlRotation().Vector() * 5'00.f;
+  FHitResult hitResult;
+  auto isHit = GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+  if (!isHit)
+  {
+    hudUi->updateHelp(FText{});
+    return;
+  }
+  const auto hitActor = hitResult.GetActor();
+  if (auto r = Cast<AFiRestaurant>(hitActor))
+  {
+    if (restaurant)
+    {
+      hudUi->updateHelp(FText{});
+      return;
+    }
+
+    hudUi->updateHelp(LOC("RMB - pick up delivery"));
+    return;
+  }
+  if (auto c = Cast<AFiCustomer>(hitActor))
+  {
+    if (!restaurant)
+    {
+      hudUi->updateHelp(FText{});
+      return;
+    }
+    if (restaurant->customer != c)
+    {
+      hudUi->updateHelp(FText{});
+      return;
+    }
+    hudUi->updateHelp(LOC("RMB - delivery food"));
+    return;
+  }
+  hudUi->updateHelp(FText{});
 }

@@ -12,4 +12,6 @@ class KITCHENSINK_API UFiHudUi : public UUserWidget
 {
   GENERATED_BODY()
 public:
+  auto updateHelp(FText) -> void;
+  auto updateObjective(FText) -> void;
 };
