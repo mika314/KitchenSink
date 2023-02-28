@@ -4,6 +4,7 @@
 
 auto UShelterGameOverHudUi::OnWidgetRebuilt() -> void
 {
+  Super::OnWidgetRebuilt();
   if (auto gameMode = UGameplayStatics::GetGameMode(this))
   {
     LOG(gameMode->OptionsString);

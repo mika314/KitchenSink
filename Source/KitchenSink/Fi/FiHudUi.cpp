@@ -33,3 +33,10 @@ auto UFiHudUi::showStars(int v) -> void
   CHECK_RET(anim);
   PlayAnimation(anim, 0);
 }
+
+auto UFiHudUi::updateIncome(int v) -> void
+{
+  auto widget = getProp<UTextBlock>(this, TEXT("IncomeTb"));
+  CHECK_RET(widget);
+  widget->SetText(FText::Format(LOC("${0}"), v));
+}

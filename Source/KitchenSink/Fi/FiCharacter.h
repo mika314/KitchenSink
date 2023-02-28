@@ -54,11 +54,11 @@ private:
   float shift = 1.f;
   int deliveries = 0;
   int stars = 0;
+  int income = 0;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
   auto Tick(float) -> void final;
-  auto gameOver() -> void;
   auto jump() -> void;
   auto look(const FInputActionValue &Value) -> void;
   auto main() -> void;

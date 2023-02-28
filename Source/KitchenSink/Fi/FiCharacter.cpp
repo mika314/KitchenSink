@@ -86,11 +86,6 @@ auto AFiCharacter::getHudUi() -> UFiHudUi *
   return hud->getHudUi();
 }
 
-auto AFiCharacter::gameOver() -> void
-{
-  UGameplayStatics::OpenLevel(GetWorld(), FName("FiGameOver"), true, "0");
-}
-
 auto AFiCharacter::updateMouseSensitivity() -> void
 {
   auto settings = Cast<USettings>(UGameplayStatics::LoadGameFromSlot("settings", 0));
@@ -172,12 +167,17 @@ auto AFiCharacter::main() -> void
       std::max(0.f, 5.f - log2f(1 + std::max(0.f, (restaurant->getOrderTime() - 25.f) / 25.f))));
     LOG("stars", curStars);
     stars += curStars;
+
+    const auto deliveryDistance = (getLoc(restaurant) - getLoc(restaurant->customer)).Size();
+    income += static_cast<int>((deliveryDistance / 1000.f + curStars));
+
     restaurant->reset();
     restaurant = nullptr;
     auto hudUi = getHudUi();
     CHECK_RET(hudUi);
     hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
     hudUi->showStars(curStars);
+    hudUi->updateIncome(income);
 
     TArray<AActor *> restaurants;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFiRestaurant::StaticClass(), restaurants);
@@ -210,7 +210,7 @@ auto AFiCharacter::Tick(float dt) -> void
 {
   Super::Tick(dt);
 
-  shift -= dt / 300.f;
+  shift -= dt / 260.f;
   updateShift();
   updateHelp();
 }
@@ -222,7 +222,7 @@ auto AFiCharacter::updateShift() -> void
     UGameplayStatics::OpenLevel(GetWorld(),
                                 FName("FiGameOver"),
                                 true,
-                                FString::Format(TEXT("deliveries={0}&stars={1}"), {deliveries, stars}));
+                                FString::Format(TEXT("deliveries={0}&stars={1}&income={2}"), {deliveries, stars, income}));
     return;
   }
 
