@@ -46,6 +46,7 @@ auto AFiCharacter::BeginPlay() -> void
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
   hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
+  shift = 1.f;
 }
 
 auto AFiCharacter::SetupPlayerInputComponent(class UInputComponent *playerInputComp) -> void
@@ -166,11 +167,17 @@ auto AFiCharacter::main() -> void
       LOG("Wrong customer");
       return;
     }
+    ++deliveries;
+    const auto curStars = static_cast<int>(
+      std::max(0.f, 5.f - log2f(1 + std::max(0.f, (restaurant->getOrderTime() - 25.f) / 25.f))));
+    LOG("stars", curStars);
+    stars += curStars;
     restaurant->reset();
     restaurant = nullptr;
     auto hudUi = getHudUi();
     CHECK_RET(hudUi);
     hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
+    hudUi->showStars(curStars);
 
     TArray<AActor *> restaurants;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFiRestaurant::StaticClass(), restaurants);
@@ -203,7 +210,26 @@ auto AFiCharacter::Tick(float dt) -> void
 {
   Super::Tick(dt);
 
+  shift -= dt / 300.f;
+  updateShift();
   updateHelp();
+}
+
+auto AFiCharacter::updateShift() -> void
+{
+  if (shift <= 0)
+  {
+    UGameplayStatics::OpenLevel(GetWorld(),
+                                FName("FiGameOver"),
+                                true,
+                                FString::Format(TEXT("deliveries={0}&stars={1}"), {deliveries, stars}));
+    return;
+  }
+
+  auto hudUi = getHudUi();
+  if (!hudUi)
+    return;
+  hudUi->updateShift(shift);
 }
 
 auto AFiCharacter::updateHelp() -> void

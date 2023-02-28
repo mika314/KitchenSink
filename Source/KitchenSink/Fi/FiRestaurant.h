@@ -14,6 +14,7 @@ class KITCHENSINK_API AFiRestaurant final : public AStaticMeshActor
 public:
   AFiRestaurant();
   auto forceOrder() -> void;
+  auto getOrderTime() const -> float { return orderTime; }
   auto hasOrder() const -> bool;
   auto reset() -> void;
 

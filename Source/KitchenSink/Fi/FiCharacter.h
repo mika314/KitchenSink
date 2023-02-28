@@ -51,6 +51,9 @@ private:
   float mouseSensitivity = 1.f;
   bool isJumping = false;
   class AFiRestaurant *restaurant = nullptr;
+  float shift = 1.f;
+  int deliveries = 0;
+  int stars = 0;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
@@ -63,4 +66,5 @@ private:
   auto stopJump() -> void;
   auto updateHelp() -> void;
   auto updateMouseSensitivity() -> void;
+  auto updateShift() -> void;
 };
