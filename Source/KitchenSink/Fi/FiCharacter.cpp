@@ -15,7 +15,10 @@
 
 AFiCharacter::AFiCharacter()
   : Mesh1P(CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"))),
-    FirstPersonCameraComponent(CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera")))
+    FirstPersonCameraComponent(CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"))),
+    jumpSnd(OBJ_FINDER(SoundCue, "2-FloatingIslands", "SND_Jump_Cue")),
+    pickupSnd(OBJ_FINDER(SoundCue, "2-FloatingIslands", "SND_Pickup_Cue")),
+    deliverySnd(OBJ_FINDER(SoundCue, "2-FloatingIslands", "SND_Delivery_Cue"))
 {
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -45,7 +48,7 @@ auto AFiCharacter::BeginPlay() -> void
 
   auto hudUi = getHudUi();
   CHECK_RET(hudUi);
-  hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
+  hudUi->update(Objective::pickup);
   shift = 1.f;
 }
 
@@ -105,6 +108,7 @@ auto AFiCharacter::jump() -> void
   const auto m = GetCapsuleComponent()->GetMass();
 
   movement->AddImpulse(vec(0., 0., std::max(0., -v * m / 250. + 1000.)), true);
+  UGameplayStatics::PlaySound2D(GetWorld(), jumpSnd);
 }
 
 auto AFiCharacter::stopJump() -> void
@@ -136,16 +140,17 @@ auto AFiCharacter::main() -> void
 
     const auto world = GetWorld();
 
-    TArray<AActor *> customers;
-    UGameplayStatics::GetAllActorsOfClass(world, AFiCustomer::StaticClass(), customers);
+    TArray<AActor *> custs;
+    UGameplayStatics::GetAllActorsOfClass(world, AFiCustomer::StaticClass(), custs);
 
-    CHECK_RET(customers.Num() != 0);
+    CHECK_RET(custs.Num() != 0);
 
-    r->customer = Cast<AFiCustomer>(customers[FMath::RandRange(0, customers.Num() - 1)]);
+    r->customer = Cast<AFiCustomer>(custs[FMath::RandRange(0, custs.Num() - 1)]);
     restaurant = r;
     auto hudUi = getHudUi();
     CHECK_RET(hudUi);
-    hudUi->updateObjective(LOC("Delivery food to the customer"));
+    hudUi->update(Objective::delivery);
+    UGameplayStatics::PlaySound2D(GetWorld(), pickupSnd);
 
     return;
   }
@@ -162,7 +167,7 @@ auto AFiCharacter::main() -> void
       LOG("Wrong customer");
       return;
     }
-    ++deliveries;
+    ++customers;
     const auto curStars = static_cast<int>(
       std::max(0.f, 5.f - log2f(1 + std::max(0.f, (restaurant->getOrderTime() - 25.f) / 25.f))));
     LOG("stars", curStars);
@@ -175,9 +180,11 @@ auto AFiCharacter::main() -> void
     restaurant = nullptr;
     auto hudUi = getHudUi();
     CHECK_RET(hudUi);
-    hudUi->updateObjective(LOC("Find a restaurant for food pickup"));
+    hudUi->update(Objective::pickup);
     hudUi->showStars(curStars);
     hudUi->updateIncome(income);
+    UGameplayStatics::PlaySound2D(GetWorld(), deliverySnd);
+
 
     TArray<AActor *> restaurants;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFiRestaurant::StaticClass(), restaurants);
@@ -210,19 +217,20 @@ auto AFiCharacter::Tick(float dt) -> void
 {
   Super::Tick(dt);
 
-  shift -= dt / 260.f;
-  updateShift();
+  updateShift(dt);
   updateHelp();
 }
 
-auto AFiCharacter::updateShift() -> void
+auto AFiCharacter::updateShift(float dt) -> void
 {
+  shift -= dt / 256.f;
   if (shift <= 0)
   {
-    UGameplayStatics::OpenLevel(GetWorld(),
-                                FName("FiGameOver"),
-                                true,
-                                FString::Format(TEXT("deliveries={0}&stars={1}&income={2}"), {deliveries, stars, income}));
+    UGameplayStatics::OpenLevel(
+      GetWorld(),
+      FName("FiGameOver"),
+      true,
+      FString::Format(TEXT("customers={0}&stars={1}&income={2}"), {customers, stars, income}));
     return;
   }
 

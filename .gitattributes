@@ -19,3 +19,4 @@
 *.fspy filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
 *.bwproject filter=lfs diff=lfs merge=lfs -text
+*.au filter=lfs diff=lfs merge=lfs -text

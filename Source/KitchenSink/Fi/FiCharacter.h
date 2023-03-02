@@ -52,9 +52,12 @@ private:
   bool isJumping = false;
   class AFiRestaurant *restaurant = nullptr;
   float shift = 1.f;
-  int deliveries = 0;
+  int customers = 0;
   int stars = 0;
   int income = 0;
+  USoundBase *jumpSnd = nullptr;
+  USoundBase *pickupSnd = nullptr;
+  USoundBase *deliverySnd = nullptr;
 
   auto BeginPlay() -> void final;
   auto SetupPlayerInputComponent(UInputComponent *InputComponent) -> void final;
@@ -66,5 +69,5 @@ private:
   auto stopJump() -> void;
   auto updateHelp() -> void;
   auto updateMouseSensitivity() -> void;
-  auto updateShift() -> void;
+  auto updateShift(float dt) -> void;
 };

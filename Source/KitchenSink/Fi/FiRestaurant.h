@@ -30,4 +30,5 @@ private:
   float orderTime = -1.f;
   float nextRandCheck = 0.f;
   class UTextRenderComponent *text;
+  USoundBase *newOrderSnd = nullptr;
 };

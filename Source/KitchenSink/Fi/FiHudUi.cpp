@@ -10,11 +10,23 @@ auto UFiHudUi::updateHelp(FText v) -> void
   widget->SetText(std::move(v));
 }
 
-auto UFiHudUi::updateObjective(FText v) -> void
+auto UFiHudUi::update(Objective v) -> void
 {
   auto widget = getProp<UTextBlock>(this, TEXT("ObjectiveTb"));
   CHECK_RET(widget);
-  widget->SetText(std::move(v));
+  auto bagImg = getProp<UImage>(this, TEXT("BagImg"));
+  CHECK_RET(bagImg);
+  switch (v)
+  {
+  case Objective::pickup:
+    widget->SetText(LOC("Find a restaurant for food pickup"));
+    bagImg->SetVisibility(ESlateVisibility::Hidden);
+    break;
+  case Objective::delivery:
+    widget->SetText(LOC("Delivery food to the customer"));
+    bagImg->SetVisibility(ESlateVisibility::Visible);
+    break;
+  }
 }
 
 auto UFiHudUi::updateShift(float v) -> void

@@ -7,6 +7,8 @@
 
 #include "FiHudUi.generated.h"
 
+enum class Objective { pickup, delivery };
+
 UCLASS()
 class KITCHENSINK_API UFiHudUi : public UUserWidget
 {
@@ -15,6 +17,6 @@ public:
   auto showStars(int) -> void;
   auto updateHelp(FText) -> void;
   auto updateIncome(int) -> void;
-  auto updateObjective(FText) -> void;
+  auto update(Objective) -> void;
   auto updateShift(float) -> void;
 };

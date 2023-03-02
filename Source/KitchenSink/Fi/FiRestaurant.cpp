@@ -4,7 +4,9 @@
 #include "FiCharacter.h"
 #include "FiCustomer.h"
 
-AFiRestaurant::AFiRestaurant() : text(CreateDefaultSubobject<UTextRenderComponent>(TEXT("text")))
+AFiRestaurant::AFiRestaurant()
+  : text(CreateDefaultSubobject<UTextRenderComponent>(TEXT("text"))),
+    newOrderSnd(OBJ_FINDER(SoundCue, "2-FloatingIslands", "SND_Bell_Cue"))
 {
   auto mesh = GetStaticMeshComponent();
   mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "StarterContent/Props", "SM_CornerFrame"));
@@ -26,7 +28,7 @@ auto AFiRestaurant::BeginPlay() -> void
 {
   Super::BeginPlay();
   orderTime = -1.f;
-  nextRandCheck = 0;
+  nextRandCheck = 0.5f;
   customer = nullptr;
 }
 
@@ -46,6 +48,7 @@ auto AFiRestaurant::Tick(float dt) -> void
       {
         instantOrder = false;
         orderTime = GetWorld()->GetTimeSeconds();
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), newOrderSnd, getLoc(this));
         LOG("new order");
       }
     }
