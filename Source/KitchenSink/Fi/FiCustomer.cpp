@@ -5,6 +5,6 @@
 AFiCustomer::AFiCustomer()
 {
   auto mesh = GetStaticMeshComponent();
-  mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "StarterContent/Shapes", "Shape_NarrowCapsule"));
+  mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "Quaternius/Mesh", "SM_Alpaking"));
   mesh->SetMobility(EComponentMobility::Movable);
 }

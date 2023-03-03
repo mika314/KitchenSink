@@ -5,7 +5,7 @@
 AFiIsland::AFiIsland()
 {
   auto mesh = GetStaticMeshComponent();
-  mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "StarterContent/Architecture", "Floor_400x400"));
+  mesh->SetStaticMesh(OBJ_FINDER(StaticMesh, "2-FloatingIslands", "SM_FloatingIsland"));
   mesh->SetMobility(EComponentMobility::Movable);
   PrimaryActorTick.bCanEverTick = true;
 }
