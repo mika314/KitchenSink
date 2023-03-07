@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// (c) 2023 Mika Pi
 
 #include "KitchenSinkGameMode.h"
 #include "KitchenSinkCharacter.h"

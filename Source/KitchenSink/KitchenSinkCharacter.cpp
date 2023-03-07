@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// (c) 2023 Mika Pi
 
 #include "KitchenSinkCharacter.h"
 #include "HudUi.h"
@@ -12,19 +12,16 @@
 #include <EnhancedInputSubsystems.h>
 
 AKitchenSinkCharacter::AKitchenSinkCharacter()
+  : Mesh1P(CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"))),
+    FirstPersonCameraComponent(CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"))),
+    bHasRifle(false)
 {
-  bHasRifle = false;
   GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
-  // Create a CameraComponent
-  FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
   FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
   FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
   FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-  // Create a mesh component that will be used when being viewed from a '1st person' view (when
-  // controlling this pawn)
-  Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
   Mesh1P->SetOnlyOwnerSee(true);
   Mesh1P->SetupAttachment(FirstPersonCameraComponent);
   Mesh1P->bCastDynamicShadow = false;
@@ -36,19 +33,17 @@ auto AKitchenSinkCharacter::BeginPlay() -> void
 {
   Super::BeginPlay();
 
-  // Add Input Mapping Context
-  if (APlayerController *PlayerController = Cast<APlayerController>(Controller))
-  {
-    if (UEnhancedInputLocalPlayerSubsystem *Subsystem =
-          ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-            PlayerController->GetLocalPlayer()))
-    {
-      Subsystem->AddMappingContext(DefaultMappingContext, 0);
-    }
-  }
-
   auto playerController = Cast<APlayerController>(GetController());
   CHECK_RET(playerController);
+
+  // Add Input Mapping Context
+  if (UEnhancedInputLocalPlayerSubsystem *Subsystem =
+        ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+          playerController->GetLocalPlayer()))
+  {
+    Subsystem->AddMappingContext(DefaultMappingContext, 0);
+  }
+
   playerController->SetInputMode(FInputModeGameOnly{});
   playerController->bShowMouseCursor = false;
 }
@@ -67,30 +62,22 @@ auto AKitchenSinkCharacter::SetupPlayerInputComponent(class UInputComponent *Pla
   updateMouseSensitivity();
 }
 
-auto AKitchenSinkCharacter::move(const FInputActionValue &Value) -> void
+auto AKitchenSinkCharacter::move(const FInputActionValue &v) -> void
 {
-  // input is a Vector2D
-  FVector2D MovementVector = Value.Get<FVector2D>();
+  CHECK_RET(GetController());
 
-  if (Controller != nullptr)
-  {
-    // add movement
-    AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-    AddMovementInput(GetActorRightVector(), MovementVector.X);
-  }
+  const auto v2d = v.Get<FVector2D>();
+  AddMovementInput(GetActorForwardVector(), v2d.Y);
+  AddMovementInput(GetActorRightVector(), v2d.X);
 }
 
-auto AKitchenSinkCharacter::look(const FInputActionValue &Value) -> void
+auto AKitchenSinkCharacter::look(const FInputActionValue &v) -> void
 {
-  // input is a Vector2D
-  FVector2D LookAxisVector = Value.Get<FVector2D>();
+  CHECK_RET(GetController());
 
-  if (Controller != nullptr)
-  {
-    // add yaw and pitch input to controller
-    AddControllerYawInput(LookAxisVector.X * mouseSensitivity);
-    AddControllerPitchInput(LookAxisVector.Y * mouseSensitivity);
-  }
+  const auto v2d = v.Get<FVector2D>();
+  AddControllerYawInput(v2d.X * mouseSensitivity);
+  AddControllerPitchInput(v2d.Y * mouseSensitivity);
 }
 
 auto AKitchenSinkCharacter::settings() -> void
@@ -121,4 +108,9 @@ auto AKitchenSinkCharacter::updateMouseSensitivity() -> void
     settings = NewObject<USettings>(this, USettings::StaticClass());
 
   mouseSensitivity = settings->mouseSensitivity;
+}
+
+auto AKitchenSinkCharacter::GetFirstPersonCameraComponent() const -> const UCameraComponent *
+{
+  return FirstPersonCameraComponent;
 }

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// (c) 2023 Mika Pi
 
 #pragma once
 

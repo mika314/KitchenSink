@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// (c) 2023 Mika Pi
 
 #pragma once
 
@@ -43,15 +43,17 @@ class AKitchenSinkCharacter : public ACharacter
 
 public:
   AKitchenSinkCharacter();
-  auto GetFirstPersonCameraComponent() const -> UCameraComponent * { return FirstPersonCameraComponent; }
-  auto GetMesh1P() const -> USkeletalMeshComponent * { return Mesh1P; }
+  auto GetFirstPersonCameraComponent() -> UCameraComponent * { return FirstPersonCameraComponent; }
+  auto GetFirstPersonCameraComponent() const -> const UCameraComponent *;
+  auto GetMesh1P() -> USkeletalMeshComponent * { return Mesh1P; }
+  auto GetMesh1P() const -> const USkeletalMeshComponent * { return Mesh1P; }
   auto updateMouseSensitivity() -> void;
 
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
   bool bHasRifle;
 
   UFUNCTION(BlueprintCallable, Category = Weapon)
-  void SetHasRifle(bool bNewHasRifle);
+  void SetHasRifle(bool v);
 
   UFUNCTION(BlueprintCallable, Category = Weapon)
   bool GetHasRifle();
@@ -65,4 +67,3 @@ private:
 
   float mouseSensitivity = 1.f;
 };
-
