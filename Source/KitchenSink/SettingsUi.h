@@ -27,5 +27,5 @@ private:
   UFUNCTION()
   void onMouseSensitivityChanged(float v);
 
-  auto setGraphicsQuality(GraphicsQuality, bool save = true) -> void;
+  auto set(GraphicsQuality, bool save = true) -> void;
 };

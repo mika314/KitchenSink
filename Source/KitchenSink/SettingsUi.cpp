@@ -14,7 +14,7 @@ auto USettingsUi::OnWidgetRebuilt() -> void
 
   const auto graphicsQuality = static_cast<GraphicsQuality>(settings->graphicsQuality);
 
-  setGraphicsQuality(graphicsQuality, false);
+  set(graphicsQuality, false /* save */);
 
   {
     auto widget = getProp<UCheckBox>(this, TEXT("GraphicsQualityLow"));
@@ -79,7 +79,7 @@ auto USettingsUi::onGraphicsQualityLowChanged(bool) -> void
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setGraphicsQuality(GraphicsQuality::low);
+  set(GraphicsQuality::low);
 }
 
 auto USettingsUi::onGraphicsQualityMedChanged(bool) -> void
@@ -104,7 +104,7 @@ auto USettingsUi::onGraphicsQualityMedChanged(bool) -> void
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setGraphicsQuality(GraphicsQuality::med);
+  set(GraphicsQuality::med);
 }
 
 auto USettingsUi::onGraphicsQualityHighChanged(bool) -> void
@@ -129,7 +129,7 @@ auto USettingsUi::onGraphicsQualityHighChanged(bool) -> void
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Unchecked);
   }
-  setGraphicsQuality(GraphicsQuality::high);
+  set(GraphicsQuality::high);
 }
 
 auto USettingsUi::onGraphicsQualityEpicChanged(bool) -> void
@@ -154,10 +154,10 @@ auto USettingsUi::onGraphicsQualityEpicChanged(bool) -> void
     CHECK_RET(widget);
     widget->SetCheckedState(ECheckBoxState::Checked);
   }
-  setGraphicsQuality(GraphicsQuality::epic);
+  set(GraphicsQuality::epic);
 }
 
-auto USettingsUi::setGraphicsQuality(GraphicsQuality v, bool save) -> void
+auto USettingsUi::set(GraphicsQuality v, bool save) -> void
 {
   if (save)
   {
